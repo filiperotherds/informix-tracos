@@ -39,27 +39,27 @@ export class CreateServiceOrder {
       num_os,
       cod_equip
     } = body;
-    
+
     const orderWithSameId = await this.informix.query(
       `SELECT * FROM os_min WHERE num_os = ?`,
       [num_os],
     );
-    
+
     if (orderWithSameId[0]) {
       throw new ConflictException('Order with same ID already exists.');
     }
 
-    const codCentTrab = await this.informix.query(
+    const equipmentData = await this.informix.query(
       `SELECT cod_empresa, cod_cent_trab FROM equipamento WHERE cod_equip = ?`,
       [cod_equip],
     )
 
-    if (!codCentTrab[0]) {
+    if (!equipmentData[0]) {
       throw new Error('Equipment not found.');
     }
 
-    const cod_empresa = codCentTrab[0].cod_empresa;
-    const cod_cent_trab = codCentTrab[0].cod_cent_trab;
+    const cod_empresa = equipmentData[0].cod_empresa;
+    const cod_cent_trab = equipmentData[0].cod_cent_trab;
 
     await this.informix.query(
       `
@@ -104,20 +104,27 @@ export class CreateServiceOrder {
     );
 
     await this.informix.query(
-      `INSERT INTO ativ_osn (
+      `
+        INSERT INTO ativ_osn (
           cod_empresa,
           num_os,
           cod_equip,
-          centro_trabalho,
           cod_motivo_manut,
           des_motivo_manut,
+          des_serv_exec,
+          des_serv_solic,
+          mot_solic_os,
+          grupo_ativ,
+          ativ,
+          dat_ini,
+          dat_fim,
           sit_ativ,
           tip_ativ,
           criticid,
           parado,
+          centro_trabalho,
           des_ativ_ordem)
-        VALUES (?, ?, ?, ?, 0, '', '', '', '', '', '')
-      )`,
+        VALUES (?, ?, ?, 0, '', null, 'TRAC_OS', '0', null, 0, null, null, 'A', '0', '1', 'N', ?, '')`,
       [
         cod_empresa,
         num_os,
@@ -125,5 +132,6 @@ export class CreateServiceOrder {
         cod_cent_trab
       ]
     );
+
   }
 }
