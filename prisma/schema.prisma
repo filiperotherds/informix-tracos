@@ -12,7 +12,7 @@ model User {
   name        String  @db.VarChar(255)
   email       String  @unique @db.VarChar(255)
   password    String
-  accessToken String? @map("access_token") @db.VarChar(300)
+  accessToken String? @map("access_token")
 
   @@map("user")
 }
