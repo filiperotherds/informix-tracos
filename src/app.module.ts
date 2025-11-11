@@ -9,6 +9,7 @@ import { CreateAccountController } from './auth/controllers/create-account.contr
 import { AuthenticateController } from './auth/controllers/authenticate.controller';
 import { CreateServiceOrder } from './controllers/create-service-order.controller';
 import { GetStock } from './controllers/get-stock.controller';
+import { CreateMaterialRequisition } from './controllers/material-requisition/create-material-requisition.controller';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { GetStock } from './controllers/get-stock.controller';
     AuthenticateController,
     CreateServiceOrder,
     GetStock,
+    CreateMaterialRequisition
   ],
   providers: [PrismaService, InformixService],
 })

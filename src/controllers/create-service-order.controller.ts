@@ -17,11 +17,9 @@ import {
   createServiceOrderBodySchema
 } from '../schema/create-service-order.schema';
 
+import { date, time } from '../common/formatted-date'
+
 class CreateServiceOrderDto extends createZodDto(createServiceOrderBodySchema) { }
-
-const date = new Date().toISOString().slice(0, 10);
-
-const time = new Date().toTimeString().slice(0, 8);
 
 @ApiTags('Ordem de Serviço')
 @Controller('/orders')
