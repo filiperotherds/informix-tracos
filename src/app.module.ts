@@ -4,12 +4,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { envSchema } from './env';
 import { AuthModule } from './auth/auth.module';
 import { InformixService } from './informix/informix.service';
-
 import { CreateAccountController } from './auth/controllers/create-account.controller';
 import { AuthenticateController } from './auth/controllers/authenticate.controller';
 import { CreateServiceOrder } from './controllers/create-service-order.controller';
 import { GetStock } from './controllers/get-stock.controller';
-import { CreateMaterialRequisition } from './controllers/material-requisition/create-material-requisition.controller';
+import { MaterialModule } from './core/material/material.module';
+import { EquipmentModule } from './core/equipment/equipment.module';
 
 @Module({
   imports: [
@@ -18,13 +18,14 @@ import { CreateMaterialRequisition } from './controllers/material-requisition/cr
       isGlobal: true,
     }),
     AuthModule,
+    MaterialModule,
+    EquipmentModule
   ],
   controllers: [
     CreateAccountController,
     AuthenticateController,
     CreateServiceOrder,
     GetStock,
-    CreateMaterialRequisition
   ],
   providers: [PrismaService, InformixService],
 })

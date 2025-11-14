@@ -10,7 +10,7 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { InformixService } from '../informix/informix.service';
-import { ZodValidationPipe } from '../pipes/zod-validation-pipe';
+import { ZodValidationPipe } from '../common/pipes/zod-validation-pipe';
 import { z } from 'zod';
 import {
   type CreateServiceOrderBodySchema,
