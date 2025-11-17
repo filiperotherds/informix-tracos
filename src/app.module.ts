@@ -7,7 +7,6 @@ import { InformixService } from './informix/informix.service';
 import { CreateAccountController } from './auth/controllers/create-account.controller';
 import { AuthenticateController } from './auth/controllers/authenticate.controller';
 import { CreateServiceOrder } from './controllers/create-service-order.controller';
-import { GetStock } from './controllers/get-stock.controller';
 import { MaterialModule } from './core/material/material.module';
 import { EquipmentModule } from './core/equipment/equipment.module';
 
@@ -25,7 +24,6 @@ import { EquipmentModule } from './core/equipment/equipment.module';
     CreateAccountController,
     AuthenticateController,
     CreateServiceOrder,
-    GetStock,
   ],
   providers: [PrismaService, InformixService],
 })

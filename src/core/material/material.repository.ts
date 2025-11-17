@@ -10,6 +10,7 @@ import {
 } from "./schemas/create-estoque-loc-reser.schema";
 import { CreateEstLocReserEndSchema } from "./schemas/create-est-loc-reser-end.schema";
 import { CrateSupParResvEstSchema } from "./schemas/create-sup-par-resv-est.schema";
+import { getAllMaterialSchema, GetAllMaterialSchema } from "./schemas/get-all-material.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -236,21 +237,21 @@ export class MaterialRepository {
         )
     }
 
-    async getAllMaterialBalance() {
-        const stock = await this.informix.query(`
+    async getAllMaterialBalance(): Promise<GetAllMaterialSchema> {
+        const response = await this.informix.query(`
             SELECT DISTINCT 
                 TRIM(item.cod_item) as cod_logix,
-                REPLACE((
+                (
                     SELECT  sum(el.qtd_saldo)
-                        FROM   estoque_lote AS el, estoque AS e, item AS it
-                        WHERE  el.cod_empresa   = "01"
-                        AND    el.cod_item      = item.cod_item
-                        AND    el.ies_situa_qtd = "L"
-                        AND    el.cod_empresa   = e.cod_empresa
-                        AND    el.cod_item      = e.cod_item
-                        AND    el.cod_empresa   = it.cod_empresa
-                        AND    el.cod_item      = it.cod_item
-                ),".",",") as saldo_estoque,
+                    FROM   estoque_lote AS el, estoque AS e, item AS it
+                    WHERE  el.cod_empresa   = "01"
+                    AND    el.cod_item      = item.cod_item
+                    AND    el.ies_situa_qtd = "L"
+                    AND    el.cod_empresa   = e.cod_empresa
+                    AND    el.cod_item      = e.cod_item
+                    AND    el.cod_empresa   = it.cod_empresa
+                    AND    el.cod_item      = it.cod_item
+                ) as saldo_estoque,
                 item_sup.pre_unit_ult_compr as preco_unit
 
             FROM item, familia, estoque, OUTER ordem_sup, OUTER item_sup
@@ -270,6 +271,8 @@ export class MaterialRepository {
             GROUP BY 1,2,3
         `);
 
-        return stock;
+        const materialBalance = getAllMaterialSchema.parse(response)
+
+        return materialBalance
     }
 }
