@@ -6,9 +6,9 @@ import { AuthModule } from './auth/auth.module';
 import { InformixService } from './informix/informix.service';
 import { CreateAccountController } from './auth/controllers/create-account.controller';
 import { AuthenticateController } from './auth/controllers/authenticate.controller';
-import { CreateServiceOrder } from './controllers/create-service-order.controller';
 import { MaterialModule } from './core/material/material.module';
 import { EquipmentModule } from './core/equipment/equipment.module';
+import { ServiceOrderModule } from './core/service-order/service-order.module';
 
 @Module({
   imports: [
@@ -18,12 +18,12 @@ import { EquipmentModule } from './core/equipment/equipment.module';
     }),
     AuthModule,
     MaterialModule,
-    EquipmentModule
+    EquipmentModule,
+    ServiceOrderModule,
   ],
   controllers: [
     CreateAccountController,
     AuthenticateController,
-    CreateServiceOrder,
   ],
   providers: [PrismaService, InformixService],
 })

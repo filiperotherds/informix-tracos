@@ -4,12 +4,13 @@ import { EquipmentDataSchema, equipmentDataSchema } from "./schemas/equipment-da
 import {
     type EquipmentCostCenterSchema
 } from "./schemas/get-equipment-cost-center.schema";
+import { GetEquipmentDataByCodSchema } from "./schemas/get-equipment-data-by-cod.schema";
 
 @Injectable()
 export class EquipmentRepository {
     constructor(private informix: InformixService) { }
 
-    async getEquipmentData(num_os: string): Promise<EquipmentDataSchema> {
+    async getEquipmentDataByOs(num_os: string): Promise<EquipmentDataSchema> {
         const equipmentResult = await this.informix.query(`
             SELECT UNIQUE
                 TRIM(ATIV_OSN.COD_EQUIP) AS COD_EQUIP,
@@ -60,5 +61,14 @@ export class EquipmentRepository {
         console.log(centroTrabalhoResult[0].cod_centro_custo)
 
         return centroTrabalhoResult[0].cod_centro_custo
+    }
+
+    async getEquipmentDataByCod(cod_equip: string): Promise<GetEquipmentDataByCodSchema> {
+        const equipment = await this.informix.query(
+            `SELECT cod_empresa, cod_cent_trab FROM equipamento WHERE cod_equip = ?`,
+            [cod_equip],
+        )
+
+        return equipment[0]
     }
 }

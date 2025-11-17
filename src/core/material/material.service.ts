@@ -15,7 +15,7 @@ export class MaterialService {
     async create(materialProps: CreateMaterialRequisitionBodySchema) {
         const { cod_item, num_os, qtd_reserva } = materialProps
 
-        const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentData(num_os)
+        const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
         const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item })
 

@@ -1,0 +1,23 @@
+import { Module } from "@nestjs/common";
+import { InformixService } from "../../informix/informix.service";
+import { CreateServiceOrder } from "./controllers/create-service-order.controller";
+import { EquipmentService } from "../equipment/equipment.service";
+import { ServiceOrderService } from "./service-order.service";
+import { EquipmentModule } from "../equipment/equipment.module";
+import { ServiceOrderRepository } from "./service-order.repository";
+
+@Module({
+    imports: [
+        EquipmentModule
+    ],
+    controllers: [
+        CreateServiceOrder
+    ],
+    providers: [
+        InformixService,
+        ServiceOrderService,
+        ServiceOrderRepository
+    ],
+})
+
+export class ServiceOrderModule { }
