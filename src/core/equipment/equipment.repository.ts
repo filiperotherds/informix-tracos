@@ -37,8 +37,6 @@ export class EquipmentRepository {
     async getEquipmentCostCenter(equipmentProps: EquipmentCostCenterSchema): Promise<number> {
         const { cod_empresa, cod_uni_funcio } = equipmentProps
 
-        console.log(cod_empresa, cod_uni_funcio)
-
         const centroTrabalhoResult = await this.informix.query(`
             SELECT
                 cod_centro_custo
@@ -57,8 +55,6 @@ export class EquipmentRepository {
         if (!centroTrabalhoResult) {
             throw new Error('COD_CENTRO_CUSTO not found.');
         }
-
-        console.log(centroTrabalhoResult[0].cod_centro_custo)
 
         return centroTrabalhoResult[0].cod_centro_custo
     }
