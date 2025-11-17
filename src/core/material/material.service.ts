@@ -102,4 +102,10 @@ export class MaterialService {
             parametro_num: null
         })
     }
+
+    async getAllMaterialBalance() {
+        const balance = await this.materialRepository.getAllMaterialBalance()
+
+        return balance
+    }
 }

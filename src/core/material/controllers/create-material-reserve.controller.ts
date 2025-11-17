@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards, UsePipes } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { createZodDto } from "nestjs-zod";
 import {
@@ -7,12 +7,13 @@ import {
 } from "../schemas/material-requisition-body.schema";
 import { ZodValidationPipe } from "../../../common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
+import { JwtAuthGuard } from "../../../auth/jwt-auth.guard";
 
 class CreateMaterialRequisitionDto extends createZodDto(createMaterialRequisitionBodySchema) { }
 
 @ApiTags('Requisição de Material')
-@Controller('/material-requisition')
-//@UseGuards(JwtAuthGuard)
+@Controller('/material/requisition')
+@UseGuards(JwtAuthGuard)
 export class CreateMaterialReserveController {
     constructor(private materialService: MaterialService) { }
 

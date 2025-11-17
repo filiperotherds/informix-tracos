@@ -4,13 +4,15 @@ import { InformixService } from "../../informix/informix.service";
 import { MaterialService } from "./material.service";
 import { MaterialRepository } from "./material.repository";
 import { EquipmentModule } from "../equipment/equipment.module";
+import { GetAllMaterialBalance } from "./controllers/get-all-material-balance.controller";
 
 @Module({
     imports: [
         EquipmentModule
     ],
     controllers: [
-        CreateMaterialReserveController
+        CreateMaterialReserveController,
+        GetAllMaterialBalance
     ],
     providers: [
         InformixService,

@@ -11,5 +11,7 @@ const expenseTypeSchema = z.coerce.number()
 export class ServiceOrderRepository {
     constructor(private informix: InformixService) { }
 
-       
+    async getOrderById() {
+        
+    }
 }
