@@ -19,6 +19,8 @@ export class ServiceOrderService {
             throw new ConflictException('Order with same ID already exists.');
         }
 
+        console.log(cod_equip, num_os)
+
         const equipment = await this.equipementRepository.getEquipmentDataByCod(cod_equip)
 
         if (!equipment) {

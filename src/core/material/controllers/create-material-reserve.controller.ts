@@ -1,5 +1,5 @@
 import { Body, Controller, Post, UseGuards, UsePipes } from "@nestjs/common";
-import { ApiBody, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { createZodDto } from "nestjs-zod";
 import {
     createMaterialRequisitionBodySchema,
@@ -30,10 +30,10 @@ export class CreateMaterialReserveController {
             qtd_reserva
         } = body;
 
-        await this.materialService.create({ 
+        await this.materialService.create({
             cod_item: cod_item,
             num_os: num_os,
-            qtd_reserva: qtd_reserva, 
+            qtd_reserva: qtd_reserva,
         })
     }
 }
