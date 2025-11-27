@@ -17,9 +17,11 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
     try {
       this.pool = await odbc.pool({
         connectionString: informix,
-        initialSize: 2,
-        maxSize: 10,
         connectionTimeout: 10,
+        loginTimeout: 10,
+        initialSize: 0,
+        maxSize: 10,
+        shrink: true
       });
       this.logger.log('Informix Pool initialized successfully');
     } catch (error) {
