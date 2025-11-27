@@ -1,4 +1,5 @@
-import z from 'zod';
+import 'dotenv/config'
+import { z } from 'zod';
 
 export const envSchema = z.object({
   DATABASE_URL: z.string(),
@@ -9,3 +10,13 @@ export const envSchema = z.object({
 });
 
 export type Env = z.infer<typeof envSchema>;
+
+const _env = envSchema.safeParse(process.env)
+
+if (_env.success === false) {
+  console.error('Invalid enviromental variables.', _env.error.format())
+
+  throw new Error('Invalid enviromental variables.')
+}
+
+export const env = _env.data
