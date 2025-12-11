@@ -1,9 +1,10 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { MaterialRepository } from "./material.repository";
-import { CreateMaterialRequisitionBodySchema } from "./schemas/material-requisition-body.schema";
+import { CreateMaterialReserveBodySchema } from "./schemas/material-reserve.schema";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { date } from "../../common/formatted-date";
+import { PatchMaterialReserveBodySchema } from "./schemas/patch-material-reserve.schema";
 
 @Injectable()
 export class MaterialService {
@@ -12,8 +13,8 @@ export class MaterialService {
         private equipmentRepository: EquipmentRepository
     ) { }
 
-    async create(materialProps: CreateMaterialRequisitionBodySchema) {
-        const { cod_item, num_os, qtd_reserva } = materialProps
+    async create(materialProps: CreateMaterialReserveBodySchema) {
+        const { cod_item, num_os, qtd_reserva, tracos_id } = materialProps
 
         const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
@@ -23,8 +24,8 @@ export class MaterialService {
             throw new ConflictException('Insufficient material balance.')
         }
 
-        const cod_centro_custo = await this.equipmentRepository.getEquipmentCostCenter({ 
-            cod_empresa: cod_empresa, 
+        const cod_centro_custo = await this.equipmentRepository.getEquipmentCostCenter({
+            cod_empresa: cod_empresa,
             cod_uni_funcio: cod_uni_funcio
         })
 
@@ -100,6 +101,69 @@ export class MaterialService {
             parametro_texto: null,
             parametro_val: cod_tip_despesa,
             parametro_num: null
+        })
+
+        await this.materialRepository.createDeParaId({
+            logixId: requisitionId.toString(),
+            tracosId: tracos_id
+        })
+    }
+
+    async patch({ cod_item, num_os, qtd_reserva }: PatchMaterialReserveBodySchema) {
+        const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
+
+        const cod_centro_custo = await this.equipmentRepository.getEquipmentCostCenter({
+            cod_empresa: cod_empresa,
+            cod_uni_funcio: cod_uni_funcio
+        })
+
+        const cod_tip_despesa = await this.materialRepository.getExpenseType({
+            cod_empresa: cod_empresa,
+            cod_item: cod_item
+        })
+
+        const num_conta_deb = formattedDebitAccount({
+            cod_centro_custo: cod_centro_custo,
+            cod_tip_despesa: cod_tip_despesa,
+        })
+
+        // PRECISO INSERIR AQUI UMA BUSCA PELA ÚLTIMA QUANTIDADE REQUISITADA PARA AS CONDIÇÕES RECEBIDAS
+
+        const num_transac = await this.materialRepository.patchEstoqueTrans({
+            cod_empresa: cod_empresa,
+            cod_item: cod_item,
+            num_os: num_os,
+            qtd_reserva: qtd_reserva,
+            num_conta_deb: num_conta_deb,
+        })
+
+        await this.materialRepository.patchEstoqueTransEnd({
+            cod_empresa: cod_empresa,
+            cod_item: cod_item,
+            num_transac: num_transac,
+            qtd_reserva: qtd_reserva,
+        })
+
+        await this.materialRepository.patchEstoqueAuditoria({
+            cod_empresa: cod_empresa,
+            num_transac: num_transac,
+        })
+
+        await this.materialRepository.patchEstoqueObs({
+            cod_empresa: cod_empresa,
+            num_transac: num_transac,
+        })
+
+        await this.materialRepository.patchEstoqueTranCompl({
+            cod_empresa: cod_empresa,
+            num_transac: num_transac,
+            num_os: num_os,
+        })
+
+        await this.materialRepository.patchEestoqueTransRev({
+            cod_empresa: cod_empresa,
+            num_transac_old: 1,
+            num_transac: num_transac,
         })
     }
 

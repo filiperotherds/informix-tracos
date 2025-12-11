@@ -10,6 +10,8 @@ import { MaterialModule } from './core/material/material.module';
 import { EquipmentModule } from './core/equipment/equipment.module';
 import { ServiceOrderModule } from './core/service-order/service-order.module';
 
+/* VÓS QUE ENTRAIS, ABANDONAI TODA A ESPERANÇA */
+
 @Module({
   imports: [
     ConfigModule.forRoot({

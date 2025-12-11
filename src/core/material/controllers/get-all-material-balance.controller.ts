@@ -3,7 +3,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../../auth/jwt-auth.guard";
 import { MaterialService } from "../material.service";
 
-@ApiTags('Estoque')
+@ApiTags('Material')
 @Controller('/material/balance')
 @UseGuards(JwtAuthGuard)
 export class GetAllMaterialBalance {

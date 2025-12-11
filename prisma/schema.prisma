@@ -16,3 +16,12 @@ model User {
 
   @@map("user")
 }
+
+model DeParaReserva {
+  tracosId String @map("tracos_id")
+  logixId  String @map("logix_id")
+
+  @@id([tracosId, logixId])
+  @@index([tracosId])
+  @@map("de_para_reserva")
+}

@@ -13,17 +13,33 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
   private pool!: odbc.Pool;
   private readonly logger = new Logger(InformixService.name);
 
+  private pingInterval: NodeJS.Timeout | null = null
+  private readonly PING_INTERVAL_MS = 300000
+
+  private startHeartbeat() {
+    this.pingInterval = setInterval(async () => {
+      try {
+        await this.pool.query('SELECT 1 FROM sysmaster:sysdual')
+
+        console.log(`Keep-Alive query executed.`)
+      } catch (err) {
+        this.logger.warn('Heartbeat ping failed - connections might be refreshing', err);
+      }
+    }, this.PING_INTERVAL_MS)
+  }
+
   async onModuleInit() {
     try {
       this.pool = await odbc.pool({
         connectionString: informix,
         connectionTimeout: 10,
-        loginTimeout: 10,
-        initialSize: 0,
-        maxSize: 10,
-        shrink: true
+        loginTimeout: 5,
+        initialSize: 2,
+        maxSize: 5,
       });
+
       this.logger.log('Informix Pool initialized successfully');
+      this.startHeartbeat()
     } catch (error) {
       this.logger.error('Failed to initialize Informix Pool', error);
       throw error;
