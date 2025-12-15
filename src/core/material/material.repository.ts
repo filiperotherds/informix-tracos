@@ -1,5 +1,5 @@
 import z from "zod";
-import { ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { InformixService } from "../../informix/informix.service";
 
 import {
@@ -12,14 +12,17 @@ import { CreateEstLocReserEndSchema } from "./schemas/create-est-loc-reser-end.s
 import { CrateSupParResvEstSchema } from "./schemas/create-sup-par-resv-est.schema";
 import { getAllMaterialSchema, GetAllMaterialSchema } from "./schemas/get-all-material.schema";
 import { date, time } from "@/common/formatted-date";
-import { CreateMaterialReserveBodySchema } from "./schemas/material-reserve.schema";
-import { PatchEstoqueTransSchema } from "./schemas/patch-estoque-trans.schema";
-import { PatchEstoqueTransEndSchema } from "./schemas/patch-estoque-trans-end.schema";
-import { PatchEstoqueAuditoriaSchema } from "./schemas/patch-estoque-auditoria.schema";
-import { PatchEstoqueTranComplSchema } from "./schemas/patch-estoque-tran-compl.schema";
-import { PatchEestoqueTransRevSchema } from "./schemas/patch-estoque-trans-rev.schema";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateDeParaSchema } from "./schemas/create-de-para.schema";
+import { UpdateEstoque } from "./schemas/update-estoque.schema";
+import { GetEstoqueTransSchema } from "./schemas/get-estoque-trans.schema";
+import { CreateEstoqueTransSchema } from "./schemas/create-estoque-trans.schema";
+import { CreateEstoqueTransEndSchema } from "./schemas/create-estoque-trans-end.schema";
+import { CreateEstoqueAuditoriaSchema } from "./schemas/create-estoque-auditoria.schema";
+import { CreateEstoqueTransRev } from "./schemas/create-estoque-trans-rev.schema";
+import { GetEstoqueLoteEnderSchema } from "./schemas/get-estoque-lote-ender.schema";
+import { UpdateEstoqueLoteEnder } from "./schemas/update-estoque-lote-ender.schema";
+import { UpdateEstoqueLote } from "./schemas/update-estoque-lote.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -74,6 +77,15 @@ export class MaterialRepository {
         }
 
         return expenseTypeSchema.parse(expenseTypeResult[0].cod_tip_despesa)
+    }
+
+    async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
+        await this.prisma.deParaReserva.create({
+            data: {
+                logixId,
+                tracosId,
+            }
+        })
     }
 
     async createEstoqueLocReser(materialProps: CreateEstoqueLocReserSchema): Promise<number> {
@@ -298,75 +310,118 @@ export class MaterialRepository {
         return materialBalance
     }
 
-    async getUltEstoqueTrans() {
+    async getNumTransac(tracos_id: string) {
+        const response = await this.prisma.deParaReserva.findFirst({
+            select: {
+                logixId: true,
+            },
+            where: {
+                tracosId: tracos_id,
+            }
+        })
 
+        if (!response) {
+            throw new BadRequestException('No values found.')
+        }
+
+        const num_transac = Number(response.logixId)
+
+        return num_transac
     }
 
-    async patchEstoqueTrans(
-        {
-            cod_item,
-            num_os,
-            qtd_reserva,
-            cod_empresa,
-            num_conta_deb
-        }: PatchEstoqueTransSchema): Promise<number> {
+    async updateEstoque({
+        cod_empresa,
+        cod_item,
+        qtd_reserva
+    }: UpdateEstoque) {
         await this.informix.query(`
-                INSERT INTO ESTOQUE_TRANS (
-                    COD_EMPRESA,
-                    COD_ITEM,
-                    DAT_MOVTO,
-                    DAT_REF_MOEDA_FORT,
-                    COD_OPERACAO,
-                    NUM_DOCUM,
-                    NUM_SEQ,
-                    IES_TIP_MOVTO,
-                    QTD_MOVTO,
-                    CUS_UNIT_MOVTO_P,
-                    CUS_TOT_MOVTO_P,
-                    CUS_UNIT_MOVTO_F,
-                    CUS_TOT_MOVTO_F,
-                    NUM_CONTA,
-                    NUM_SECAO_REQUIS,
-                    COD_LOCAL_EST_ORIG,
-                    COD_LOCAL_EST_DEST,
-                    NUM_LOTE_ORIG,
-                    NUM_LOTE_DEST,
-                    IES_SIT_EST_ORIG,
-                    IES_SIT_EST_DEST,
-                    COD_TURNO,
-                    NOM_USUARIO,
-                    DAT_PROCES,
-                    HOR_OPERAC,
-                    NUM_PROG)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-            cod_empresa,
-            cod_item,
-            date,
-            date,
-            'RMIN',
-            num_os,
-            null,
-            'R',
-            qtd_reserva,
-            0,
-            0,
-            0,
-            0,
-            num_conta_deb,
-            null, // num_secao_requis, -- Não sei de onde pegar esse valor
-            'ALMCENFABR',
-            null,
-            null,
-            null,
-            'L',
-            '',
-            null,
-            'pcgeovan',
-            date,
-            time,
-            'SUP0710'
-        ]
+            UPDATE 
+                estoque
+            SET
+                qtd_reservada = ?
+            WHERE
+                cod_empresa = ?
+                AND cod_item = ?
+            `,
+            [
+                qtd_reserva,
+                cod_empresa,
+                cod_item
+            ]
+        )
+    }
+
+    async getEstoqueTrans({
+        cod_empresa,
+        cod_item,
+        num_transac
+    }: GetEstoqueTransSchema) {
+        const estoque_trans = await this.informix.query(`
+            SELECT
+                estoque_trans.*
+            FROM
+                estoque_trans
+            WHERE
+                estoque_trans.cod_empresa = '?' 
+                AND estoque_trans.cod_item = '?' 
+                AND estoque_trans.num_transac = ?`,
+            [
+                cod_empresa,
+                cod_item,
+                num_transac
+            ]
+        )
+
+        return estoque_trans[0]
+    }
+
+    async createEstoqueTrans({
+        cod_empresa,
+        cod_item,
+        num_docum,
+        num_conta,
+        qtd_movto,
+        num_secao_requis
+    }: CreateEstoqueTransSchema) {
+        await this.informix.query(`
+            INSERT INTO ESTOQUE_TRANS (
+                COD_EMPRESA,
+                COD_ITEM,
+                DAT_MOVTO,
+                DAT_REF_MOEDA_FORT,
+                COD_OPERACAO,
+                NUM_DOCUM,
+                NUM_SEQ,
+                IES_TIP_MOVTO,
+                QTD_MOVTO,
+                NUM_CONTA,
+                NUM_SECAO_REQUIS,
+                COD_LOCAL_EST_ORIG,
+                COD_LOCAL_EST_DEST,
+                NUM_LOTE_ORIG,
+                NUM_LOTE_DEST,
+                IES_SIT_EST_ORIG,
+                IES_SIT_EST_DEST,
+                COD_TURNO,
+                NOM_USUARIO,
+                DAT_PROCES,
+                HOR_OPERAC,
+                NUM_PROG
+            ) VALUES (
+                ?, ?, ?, ?, 'RM', ?, 0, 'R', ?, ?, ?, 'ALMCENFABR', '', NULL, NULL, 'L', 'L', NULL, 'pcgeovan', ?, ?, 'SUP0710'
+            )`,
+            [
+                cod_empresa,
+                cod_item,
+                date,
+                date,
+                num_docum,
+                qtd_movto,
+                num_conta,
+                num_secao_requis,
+                date,
+                time
+            ]
         )
 
         const idResult = await this.informix.query(
@@ -376,13 +431,12 @@ export class MaterialRepository {
         return idResult[0].new_id
     }
 
-
-    async patchEstoqueTransEnd({
+    async createEstoqueTransEnd({
         cod_empresa,
         cod_item,
         num_transac,
-        qtd_reserva,
-    }: PatchEstoqueTransEndSchema) {
+        qtd_movto
+    }: CreateEstoqueTransEndSchema) {
         await this.informix.query(`
             INSERT INTO ESTOQUE_TRANS_END (
                 COD_EMPRESA,
@@ -390,177 +444,140 @@ export class MaterialRepository {
                 ENDERECO,
                 NUM_VOLUME,
                 QTD_MOVTO,
-                COD_GRADE_1,
-                COD_GRADE_2,
-                COD_GRADE_3,
-                COD_GRADE_4,
-                COD_GRADE_5,
-                DAT_HOR_PROD_INI,
-                DAT_HOR_PROD_FIM,
-                VLR_TEMPERATURA,
-                ENDERECO_ORIGEM,
-                NUM_PED_VEN,
-                NUM_SEQ_PED_VEN,
-                DAT_HOR_PRODUCAO,
-                DAT_HOR_VALIDADE,
-                NUM_PECA,
-                NUM_SERIE,
-                COMPRIMENTO,
-                LARGURA,
-                ALTURA,
-                DIAMETRO,
-                DAT_HOR_RESERV_1,
-                DAT_HOR_RESERV_2,
-                DAT_HOR_RESERV_3,
-                QTD_RESERV_1,
-                QTD_RESERV_2,
-                QTD_RESERV_3,
-                NUM_RESERV_1,
-                NUM_RESERV_2,
-                NUM_RESERV_3,
-                TEX_RESERVADO,
-                CUS_UNIT_MOVTO_P,
-                CUS_UNIT_MOVTO_F,
-                CUS_TOT_MOVTO_P,
-                CUS_TOT_MOVTO_F,
                 COD_ITEM,
                 DAT_MOVTO,
                 COD_OPERACAO,
                 IES_TIP_MOVTO,
-                NUM_PROG,
-                IDENTIF_ESTOQUE,
-                DEPOSIT) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-            cod_empresa,
-            num_transac,
-            '',
-            0,
-            qtd_reserva,
-            '',
-            '',
-            '',
-            '',
-            '',
-            '1900-01-01 00:00:00',
-            '1900-01-01 00:00:00',
-            0,
-            '',
-            0,
-            0,
-            '1900-01-01 00:00:00',
-            '1900-01-01 00:00:00',
-            '',
-            '',
-            0,
-            0,
-            0,
-            0,
-            '1900-01-01 00:00:00',
-            '1900-01-01 00:00:00',
-            '1900-01-01 00:00:00',
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            '',
-            0,
-            0,
-            0,
-            0,
-            cod_item,
-            date,
-            'RMIN',
-            'R',
-            'SUP0710',
-            null,
-            null
-        ])
+                NUM_PROG
+            ) VALUES (
+                ?, ?, '', 0, ?, ?, ?, 'RM', 'R', 'SUP0710'
+            )`,
+            [
+                cod_empresa,
+                num_transac,
+                qtd_movto,
+                cod_item,
+                date
+            ]
+        )
     }
 
-    async patchEstoqueAuditoria({
+    async createEstoqueAuditoria({
         cod_empresa,
-        num_transac,
-    }: PatchEstoqueAuditoriaSchema) {
+        num_transac
+    }: CreateEstoqueAuditoriaSchema) {
         await this.informix.query(`
             INSERT INTO ESTOQUE_AUDITORIA (
                 COD_EMPRESA,
                 NUM_TRANSAC,
                 NOM_USUARIO,
                 DAT_HOR_PROCES,
-                NUM_PROGRAMA)
-            VALUES (?, ?, ?, ?, ?)
-            `, [
-            cod_empresa,
-            num_transac,
-            'pcgeovan',
-            new Date(),
-        ])
-    }
+                NUM_PROGRAMA
+            ) VALUES 
+                (?, ?, 'pcgeovan', ?, 'SUP0710')`,
+            [
+                cod_empresa,
+                num_transac,
+                date
+            ]
+        )
 
-    async patchEstoqueObs({
-        cod_empresa,
-        num_transac,
-    }: PatchEstoqueAuditoriaSchema) {
         await this.informix.query(`
-            INTO ESTOQUE_OBS (
+            INSERT INTO ESTOQUE_OBS (
                 COD_EMPRESA,
                 NUM_TRANSAC,
-                TEX_OBSERV)
-            VALUES (?, ?, ?)
-            `, [
-            cod_empresa,
-            num_transac,
-            'Atualização de reserva via TracOs.'
-        ])
+                TEX_OBSERV
+            ) VALUES 
+                (?, ?, 'Operação realizada via TracOs.')`,
+            [
+                cod_empresa,
+                num_transac
+            ]
+        )
     }
 
-    async patchEstoqueTranCompl({
+    async createEstoqueTransRev({
         cod_empresa,
         num_transac,
-        num_os
-    }: PatchEstoqueTranComplSchema) {
+        new_num_transac
+    }: CreateEstoqueTransRev) {
         await this.informix.query(`
-            INSERT INTO ESTOQUE_TRAN_COMPL (
-                COD_EMPRESA,
-                NUM_TRANSAC,
-                NUM_OS_MIN,
-                COD_FORNECEDOR)
-            VALUES (?, ?, ?, ?)
-            `, [
-            cod_empresa,
-            num_transac,
-            num_os,
-            null
-        ])
+            INSERT INTO
+                ESTOQUE_TRANS_REV
+            VALUES (?, ?, ?)`,
+            [
+                cod_empresa,
+                num_transac,
+                new_num_transac
+            ]
+        )
     }
 
-    async patchEestoqueTransRev({
+    async getEstoqueLoteEnder({
         cod_empresa,
-        num_transac_old,
+        cod_item
+    }: GetEstoqueLoteEnderSchema) {
+        const response = await this.informix.query(`
+            SELECT
+                num_transac, qtd_saldo 
+            FROM
+                estoque_lote_ender   
+            WHERE
+                cod_empresa = ?     
+                AND cod_item = ?     
+                AND cod_local = 'ALMCENFABR'     
+                AND (num_lote IS NULL OR num_lote = ' ')
+                AND ies_situa_qtd = 'L'`,
+            [
+                cod_empresa,
+                cod_item
+            ]
+        )
+
+        return response[0]
+    }
+
+    async updateEstoqueLoteEnder({
+        qtd_saldo,
+        cod_empresa,
         num_transac
-    }: PatchEestoqueTransRevSchema) {
+    }: UpdateEstoqueLoteEnder) {
         await this.informix.query(`
-            INSERT INTO ESTOQUE_TRANS_REV VALUES(?, ?, ?)
-            `, [
-            cod_empresa,
-            num_transac_old,
-            num_transac,
-        ])
+            UPDATE
+                estoque_lote_ender 
+            SET 
+                qtd_saldo = ?
+            WHERE
+                cod_empresa = ?
+                AND num_transac = ?`,
+            [
+                qtd_saldo,
+                cod_empresa,
+                num_transac
+            ]
+        )
     }
 
-    async getEstoqueTrans(tracos_id: string) {
-
-    }
-
-    async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
-        await this.prisma.deParaReserva.create({
-            data: {
-                logixId,
-                tracosId,
-            }
-        })
+    async updateEstoqueLote({
+        qtd_reversao,
+        cod_empresa,
+        cod_item
+    }: UpdateEstoqueLote) {
+        await this.informix.query(`
+            UPDATE
+                ESTOQUE_LOTE 
+            SET
+                QTD_SALDO = QTD_SALDO + ?
+            WHERE
+                COD_EMPRESA=?
+                AND COD_ITEM=?
+                AND COD_LOCAL='ALMCENFABR' 
+                AND IES_SITUA_QTD='L'`,
+            [
+                qtd_reversao,
+                cod_empresa,
+                cod_item
+            ]
+        )
     }
 }
