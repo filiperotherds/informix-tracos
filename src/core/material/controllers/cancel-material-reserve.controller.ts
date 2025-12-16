@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Patch, UseGuards, UsePipes } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "@/common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
@@ -12,13 +12,13 @@ import { MaterialReserveDto } from "../material-reserve.dto";
 @ApiTags('Material')
 @Controller('/material')
 @UseGuards(JwtAuthGuard)
-export class CreateMaterialReserveController {
+export class CancelMaterialReserveController {
     constructor(private materialService: MaterialService) { }
 
-    @Post('/reserve')
+    @Patch('/cancel-reserve')
     @ApiBody({
         type: MaterialReserveDto,
-        description: 'Create a new material reserve',
+        description: 'Cancel an material reserve',
     })
     @UsePipes(new ZodValidationPipe(materialReserveBodySchema))
     async handle(@Body() body: MaterialReserveBodySchema) {
@@ -29,7 +29,7 @@ export class CreateMaterialReserveController {
             tracos_id
         } = body;
 
-        await this.materialService.createReserve({
+        await this.materialService.cancelReserve({
             cod_item: cod_item,
             num_os: num_os,
             qtd_reserva: qtd_reserva,

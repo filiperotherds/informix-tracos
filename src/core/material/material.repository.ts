@@ -13,7 +13,7 @@ import { CrateSupParResvEstSchema } from "./schemas/create-sup-par-resv-est.sche
 import { getAllMaterialSchema, GetAllMaterialSchema } from "./schemas/get-all-material.schema";
 import { date, time } from "@/common/formatted-date";
 import { PrismaService } from "@/prisma/prisma.service";
-import { CreateDeParaSchema } from "./schemas/create-de-para.schema";
+import { CreateDeParaSchema } from "./schemas/de-para/create-de-para.schema";
 import { UpdateEstoque } from "./schemas/update-estoque.schema";
 import { GetEstoqueTransSchema } from "./schemas/get-estoque-trans.schema";
 import { CreateEstoqueTransSchema } from "./schemas/create-estoque-trans.schema";
@@ -23,6 +23,7 @@ import { CreateEstoqueTransRev } from "./schemas/create-estoque-trans-rev.schema
 import { GetEstoqueLoteEnderSchema } from "./schemas/get-estoque-lote-ender.schema";
 import { UpdateEstoqueLoteEnder } from "./schemas/update-estoque-lote-ender.schema";
 import { UpdateEstoqueLote } from "./schemas/update-estoque-lote.schema";
+import { DeleteDeParaSchema } from "./schemas/de-para/delete-de-para.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -34,6 +35,27 @@ export class MaterialRepository {
         private informix: InformixService,
         private prisma: PrismaService
     ) { }
+
+    /* ===== Operações De/Para ===== */
+
+    async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
+        await this.prisma.deParaReserva.create({
+            data: {
+                logixId,
+                tracosId,
+            }
+        })
+    }
+
+    async deleteDeParaId({ tracosId }: DeleteDeParaSchema) {
+        await this.prisma.deParaReserva.deleteMany({
+            where: {
+                tracosId
+            }
+        })
+    }
+
+    /* ===== Operações De/Para ===== */
 
     async getMaterialBalance(materialProps: GetMaterialSchema): Promise<number> {
         const { cod_item, cod_empresa } = materialProps
@@ -77,15 +99,6 @@ export class MaterialRepository {
         }
 
         return expenseTypeSchema.parse(expenseTypeResult[0].cod_tip_despesa)
-    }
-
-    async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
-        await this.prisma.deParaReserva.create({
-            data: {
-                logixId,
-                tracosId,
-            }
-        })
     }
 
     async createEstoqueLocReser(materialProps: CreateEstoqueLocReserSchema): Promise<number> {
@@ -329,7 +342,7 @@ export class MaterialRepository {
         return num_transac
     }
 
-    async updateEstoque({
+    async updateEstoqueQtdReservada({
         cod_empresa,
         cod_item,
         qtd_reserva
@@ -575,6 +588,27 @@ export class MaterialRepository {
                 AND IES_SITUA_QTD='L'`,
             [
                 qtd_reversao,
+                cod_empresa,
+                cod_item
+            ]
+        )
+    }
+
+    async updateEstoqueQtdLiberada({
+        qtd_liberada,
+        cod_empresa,
+        cod_item
+    }) {
+        await this.informix.query(`
+                UPDATE
+                    ESTOQUE 
+                SET
+                    QTD_LIBERADA = ?
+                WHERE
+                    COD_EMPRESA = ?
+                    AND COD_ITEM = ?`,
+            [
+                qtd_liberada,
                 cod_empresa,
                 cod_item
             ]

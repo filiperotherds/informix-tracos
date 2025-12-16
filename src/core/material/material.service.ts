@@ -1,10 +1,9 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { MaterialRepository } from "./material.repository";
-import { CreateMaterialReserveBodySchema } from "./schemas/material-reserve.schema";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { date } from "../../common/formatted-date";
-import { PatchMaterialReserveBodySchema } from "./schemas/patch-material-reserve.schema";
+import { MaterialReserveBodySchema } from "./schemas/body/material-reserve-body.schema";
 
 @Injectable()
 export class MaterialService {
@@ -13,9 +12,12 @@ export class MaterialService {
         private equipmentRepository: EquipmentRepository
     ) { }
 
-    async create(materialProps: CreateMaterialReserveBodySchema) {
-        const { cod_item, num_os, qtd_reserva, tracos_id } = materialProps
-
+    async createReserve({
+        cod_item,
+        num_os,
+        qtd_reserva,
+        tracos_id
+    }: MaterialReserveBodySchema) {
         const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
         const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item })
@@ -103,7 +105,7 @@ export class MaterialService {
             parametro_num: null
         })
 
-        await this.materialRepository.updateEstoque({
+        await this.materialRepository.updateEstoqueQtdReservada({
             cod_empresa,
             cod_item,
             qtd_reserva
@@ -115,7 +117,12 @@ export class MaterialService {
         })
     }
 
-    async patch({ cod_item, num_os, qtd_reserva, tracos_id }: PatchMaterialReserveBodySchema) {
+    async cancelReserve({
+        cod_item,
+        num_os,
+        qtd_reserva,
+        tracos_id
+    }: MaterialReserveBodySchema) {
         const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
         const cod_centro_custo = await this.equipmentRepository.getEquipmentCostCenter({
@@ -182,7 +189,36 @@ export class MaterialService {
             cod_item
         })
 
-        
+        await this.materialRepository.updateEstoqueQtdLiberada({
+            cod_empresa,
+            cod_item,
+            qtd_liberada: saldo_reversao
+        })
+
+        await this.materialRepository.deleteDeParaId({
+            tracosId: tracos_id
+        })
+    }
+
+    async updateReserveValue({
+        cod_item,
+        num_os,
+        qtd_reserva,
+        tracos_id
+    }) {
+        await this.cancelReserve({
+            cod_item,
+            num_os,
+            qtd_reserva,
+            tracos_id
+        })
+
+        await this.createReserve({
+            cod_item,
+            num_os,
+            qtd_reserva,
+            tracos_id
+        })
     }
 
     async getAllMaterialBalance() {

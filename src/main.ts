@@ -11,9 +11,9 @@ async function bootstrap() {
   const port = configService.get('PORT', { infer: true });
 
   const config = new DocumentBuilder()
-    .setTitle('Riclan - Tractian | APIs')
-    .setDescription('Informix connection endpoints')
-    .setVersion('1.0')
+    .setTitle('Tractian - Logix Informix | APIs')
+    .setDescription('Informix integration endpoints')
+    .setVersion('BETA')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

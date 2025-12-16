@@ -47,16 +47,27 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
   }
 
   async query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-    if (!this.pool) {
-      throw new Error('Database pool is not initialized');
-    }
+    return this.pool.query(sql, params) as Promise<T[]>;
+  }
 
+  async transaction<T>(
+    callback: (connection: odbc.Connection) => Promise<T>
+  ): Promise<T> {
+    const connection = await this.pool.connect();
     try {
-      const result = await this.pool.query(sql, params);
-      return result as T[];
+      await connection.query('BEGIN WORK');
+      const result = await callback(connection);
+      await connection.query('COMMIT WORK');
+      return result;
     } catch (error) {
-      this.logger.error(`Query failed: ${sql}`, error);
+      try {
+        await connection.query('ROLLBACK WORK');
+      } catch (rollbackError) {
+        this.logger.error('Rollback failed', rollbackError);
+      }
       throw error;
+    } finally {
+      await connection.close();
     }
   }
 

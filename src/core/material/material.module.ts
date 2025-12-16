@@ -5,8 +5,9 @@ import { MaterialService } from "./material.service";
 import { MaterialRepository } from "./material.repository";
 import { EquipmentModule } from "../equipment/equipment.module";
 import { GetAllMaterialBalance } from "./controllers/get-all-material-balance.controller";
-import { PatcheMaterialReserveController } from "./controllers/patch-material-reserve.controller";
+import { UpdateMaterialReserveController } from "./controllers/update-material-reserve.controller";
 import { PrismaService } from "@/prisma/prisma.service";
+import { CancelMaterialReserveController } from "./controllers/cancel-material-reserve.controller";
 
 @Module({
     imports: [
@@ -15,7 +16,8 @@ import { PrismaService } from "@/prisma/prisma.service";
     controllers: [
         CreateMaterialReserveController,
         GetAllMaterialBalance,
-        PatcheMaterialReserveController
+        UpdateMaterialReserveController,
+        CancelMaterialReserveController
     ],
     providers: [
         InformixService,
