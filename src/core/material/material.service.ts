@@ -148,6 +148,10 @@ export class MaterialService {
             num_transac,
         })
 
+        if (!estoque_trans) {
+            throw new ConflictException("")
+        }
+
         const new_num_transac = await this.materialRepository.createEstoqueTrans({
             cod_empresa,
             cod_item,

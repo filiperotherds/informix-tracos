@@ -375,8 +375,8 @@ export class MaterialRepository {
             FROM
                 estoque_trans
             WHERE
-                estoque_trans.cod_empresa = '?' 
-                AND estoque_trans.cod_item = '?' 
+                estoque_trans.cod_empresa = ? 
+                AND estoque_trans.cod_item = ? 
                 AND estoque_trans.num_transac = ?`,
             [
                 cod_empresa,
@@ -384,6 +384,8 @@ export class MaterialRepository {
                 num_transac
             ]
         )
+
+        console.log(estoque_trans)
 
         return estoque_trans[0]
     }
