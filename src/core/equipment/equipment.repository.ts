@@ -10,8 +10,10 @@ import { GetEquipmentDataByCodSchema } from "./schemas/get-equipment-data-by-cod
 export class EquipmentRepository {
     constructor(private informix: InformixService) { }
 
-    async getEquipmentDataByOs(num_os: string): Promise<EquipmentDataSchema> {
-        const equipmentResult = await this.informix.query(`
+    async getEquipmentDataByOs(num_os: string, connection?: any): Promise<EquipmentDataSchema> {
+        const db = connection || this.informix
+
+        const equipmentResult = await db.query(`
             SELECT UNIQUE
                 TRIM(ATIV_OSN.COD_EQUIP) AS COD_EQUIP,
                 TRIM(EQUIPAMENTO.COD_UNI_FUNCIO) AS COD_UNI_FUNCIO,
@@ -34,10 +36,12 @@ export class EquipmentRepository {
         return equipmentDataSchema.parse(equipmentResult[0]);
     }
 
-    async getEquipmentCostCenter(equipmentProps: EquipmentCostCenterSchema): Promise<number> {
+    async getEquipmentCostCenter(equipmentProps: EquipmentCostCenterSchema, connection?: any): Promise<number> {
+        const db = connection || this.informix
+
         const { cod_empresa, cod_uni_funcio } = equipmentProps
 
-        const centroTrabalhoResult = await this.informix.query(`
+        const centroTrabalhoResult = await db.query(`
             SELECT
                 cod_centro_custo
             FROM
@@ -59,8 +63,10 @@ export class EquipmentRepository {
         return centroTrabalhoResult[0].cod_centro_custo
     }
 
-    async getEquipmentDataByCod(cod_equip: string): Promise<GetEquipmentDataByCodSchema> {
-        const equipment = await this.informix.query(
+    async getEquipmentDataByCod(cod_equip: string, connection?: any): Promise<GetEquipmentDataByCodSchema> {
+        const db = connection || this.informix
+
+        const equipment = await db.query(
             `SELECT cod_empresa, cod_cent_trab FROM equipamento WHERE cod_equip = ?`,
             [cod_equip],
         )

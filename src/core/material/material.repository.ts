@@ -57,10 +57,12 @@ export class MaterialRepository {
 
     /* ===== Operações De/Para ===== */
 
-    async getMaterialBalance(materialProps: GetMaterialSchema): Promise<number> {
-        const { cod_item, cod_empresa } = materialProps
+    async getMaterialBalance({
+        cod_item, cod_empresa
+    }: GetMaterialSchema, connection?: any): Promise<number> {
+        const db = connection || this.informix
 
-        const balanceResult = await this.informix.query(`
+        const balanceResult = await db.query(`
             SELECT
                 sum(qtd_saldo) AS qtd
             FROM
@@ -77,10 +79,12 @@ export class MaterialRepository {
         return materialBalanceSchema.parse(balanceResult[0].qtd)
     }
 
-    async getExpenseType(materialProps: GetMaterialSchema): Promise<number> {
-        const { cod_item, cod_empresa } = materialProps
+    async getExpenseType({
+        cod_item, cod_empresa
+    }: GetMaterialSchema, connection?: any): Promise<number> {
+        const db = connection || this.informix
 
-        const expenseTypeResult = await this.informix.query(`
+        const expenseTypeResult = await db.query(`
             SELECT
                 cod_tip_despesa
             FROM
@@ -101,19 +105,19 @@ export class MaterialRepository {
         return expenseTypeSchema.parse(expenseTypeResult[0].cod_tip_despesa)
     }
 
-    async createEstoqueLocReser(materialProps: CreateEstoqueLocReserSchema): Promise<number> {
-        const {
-            cod_empresa,
-            cod_equip,
-            cod_item,
-            cod_uni_funcio,
-            date,
-            num_conta_deb,
-            num_os,
-            qtd_reserva
-        } = materialProps
+    async createEstoqueLocReser({
+        cod_empresa,
+        cod_equip,
+        cod_item,
+        cod_uni_funcio,
+        date,
+        num_conta_deb,
+        num_os,
+        qtd_reserva
+    }: CreateEstoqueLocReserSchema, connection?: any): Promise<number> {
+        const db = connection || this.informix
 
-        await this.informix.query(`
+        await db.query(`
             INSERT INTO ESTOQUE_LOC_RESER (
                 COD_EMPRESA,
                 COD_ITEM,
@@ -156,11 +160,11 @@ export class MaterialRepository {
             ]
         )
 
-        const idResult = await this.informix.query(
+        const idResult = await db.query(
             `SELECT DBINFO('sqlca.sqlerrd1') AS new_id FROM systables WHERE tabid = 1`
         )
 
-        await this.informix.query(`
+        await db.query(`
             INSERT INTO ESTOQ_LOC_RES_OBS (
                 COD_EMPRESA,
                 NUM_RESERVA,
@@ -175,9 +179,10 @@ export class MaterialRepository {
         return idResult[0].new_id
     }
 
-    async createEstLocReserEnd({ cod_empresa, id }: CreateEstLocReserEndSchema) {
+    async createEstLocReserEnd({ cod_empresa, id }: CreateEstLocReserEndSchema, connection?: any) {
+        const db = connection || this.informix
 
-        await this.informix.query(`
+        await db.query(`
             INSERT INTO EST_LOC_RESER_END (
                 COD_EMPRESA,
                 NUM_RESERVA,
@@ -257,8 +262,10 @@ export class MaterialRepository {
             parametro_texto,
             parametro_val,
             requisitionId
-        }: CrateSupParResvEstSchema) {
-        await this.informix.query(`
+        }: CrateSupParResvEstSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             INSERT INTO SUP_PAR_RESV_EST (
                 EMPRESA,
                 RESERVA,
@@ -284,8 +291,10 @@ export class MaterialRepository {
         )
     }
 
-    async getAllMaterialBalance(): Promise<GetAllMaterialSchema> {
-        const response = await this.informix.query(`
+    async getAllMaterialBalance(connection?: any): Promise<GetAllMaterialSchema> {
+        const db = connection || this.informix
+
+        const response = await db.query(`
             SELECT DISTINCT 
                 TRIM(item.cod_item) as cod_logix,
                 (
@@ -346,8 +355,10 @@ export class MaterialRepository {
         cod_empresa,
         cod_item,
         qtd_reserva
-    }: UpdateEstoque) {
-        await this.informix.query(`
+    }: UpdateEstoque, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             UPDATE 
                 estoque
             SET
@@ -368,8 +379,10 @@ export class MaterialRepository {
         cod_empresa,
         cod_item,
         num_transac
-    }: GetEstoqueTransSchema) {
-        const estoque_trans = await this.informix.query(`
+    }: GetEstoqueTransSchema, connection?: any) {
+        const db = connection || this.informix
+
+        const estoque_trans = await db.query(`
             SELECT
                 estoque_trans.*
             FROM
@@ -377,7 +390,7 @@ export class MaterialRepository {
             WHERE
                 estoque_trans.cod_empresa = ? 
                 AND estoque_trans.cod_item = ? 
-                AND estoque_trans.num_transac = ?`,
+                AND estoque_trans.num_docum = ?`,
             [
                 cod_empresa,
                 cod_item,
@@ -397,8 +410,10 @@ export class MaterialRepository {
         num_conta,
         qtd_movto,
         num_secao_requis
-    }: CreateEstoqueTransSchema) {
-        await this.informix.query(`
+    }: CreateEstoqueTransSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             INSERT INTO ESTOQUE_TRANS (
                 COD_EMPRESA,
                 COD_ITEM,
@@ -421,9 +436,13 @@ export class MaterialRepository {
                 NOM_USUARIO,
                 DAT_PROCES,
                 HOR_OPERAC,
-                NUM_PROG
+                NUM_PROG,
+                CUS_TOT_MOVTO_F,
+                CUS_UNIT_MOVTO_F,
+                CUS_TOT_MOVTO_P,
+                CUS_UNIT_MOVTO_P
             ) VALUES (
-                ?, ?, ?, ?, 'RM', ?, 0, 'R', ?, ?, ?, 'ALMCENFABR', '', NULL, NULL, 'L', 'L', NULL, 'pcgeovan', ?, ?, 'SUP0710'
+                ?, ?, ?, ?, 'RM', ?, 0, 'R', ?, ?, ?, 'ALMCENFABR', '', NULL, NULL, 'L', 'L', NULL, 'pcgeovan', ?, ?, 'SUP0710', 0, 0, 0, 0
             )`,
             [
                 cod_empresa,
@@ -439,7 +458,7 @@ export class MaterialRepository {
             ]
         )
 
-        const idResult = await this.informix.query(
+        const idResult = await db.query(
             `SELECT DBINFO('sqlca.sqlerrd1') AS new_id FROM systables WHERE tabid = 1`
         )
 
@@ -451,8 +470,10 @@ export class MaterialRepository {
         cod_item,
         num_transac,
         qtd_movto
-    }: CreateEstoqueTransEndSchema) {
-        await this.informix.query(`
+    }: CreateEstoqueTransEndSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             INSERT INTO ESTOQUE_TRANS_END (
                 COD_EMPRESA,
                 NUM_TRANSAC,
@@ -463,9 +484,32 @@ export class MaterialRepository {
                 DAT_MOVTO,
                 COD_OPERACAO,
                 IES_TIP_MOVTO,
-                NUM_PROG
+                NUM_PROG,
+                cod_grade_1,
+                cod_grade_2,
+                cod_grade_3,
+                cod_grade_4,
+                cod_grade_5,
+                dat_hor_prod_ini,
+                dat_hor_prod_fim
             ) VALUES (
-                ?, ?, '', 0, ?, ?, ?, 'RM', 'R', 'SUP0710'
+                ?,
+                ?,
+                '',
+                0,
+                ?,
+                ?,
+                ?,
+                'RM',
+                'R',
+                'SUP0710',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '01/01/1900 00:00:00',
+                '01/01/1900 00:00:00'
             )`,
             [
                 cod_empresa,
@@ -480,8 +524,10 @@ export class MaterialRepository {
     async createEstoqueAuditoria({
         cod_empresa,
         num_transac
-    }: CreateEstoqueAuditoriaSchema) {
-        await this.informix.query(`
+    }: CreateEstoqueAuditoriaSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             INSERT INTO ESTOQUE_AUDITORIA (
                 COD_EMPRESA,
                 NUM_TRANSAC,
@@ -497,7 +543,7 @@ export class MaterialRepository {
             ]
         )
 
-        await this.informix.query(`
+        await db.query(`
             INSERT INTO ESTOQUE_OBS (
                 COD_EMPRESA,
                 NUM_TRANSAC,
@@ -515,8 +561,10 @@ export class MaterialRepository {
         cod_empresa,
         num_transac,
         new_num_transac
-    }: CreateEstoqueTransRev) {
-        await this.informix.query(`
+    }: CreateEstoqueTransRev, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             INSERT INTO
                 ESTOQUE_TRANS_REV
             VALUES (?, ?, ?)`,
@@ -531,8 +579,10 @@ export class MaterialRepository {
     async getEstoqueLoteEnder({
         cod_empresa,
         cod_item
-    }: GetEstoqueLoteEnderSchema) {
-        const response = await this.informix.query(`
+    }: GetEstoqueLoteEnderSchema, connection?: any) {
+        const db = connection || this.informix
+
+        const response = await db.query(`
             SELECT
                 num_transac, qtd_saldo 
             FROM
@@ -556,8 +606,10 @@ export class MaterialRepository {
         qtd_saldo,
         cod_empresa,
         num_transac
-    }: UpdateEstoqueLoteEnder) {
-        await this.informix.query(`
+    }: UpdateEstoqueLoteEnder, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             UPDATE
                 estoque_lote_ender 
             SET 
@@ -577,8 +629,10 @@ export class MaterialRepository {
         qtd_reversao,
         cod_empresa,
         cod_item
-    }: UpdateEstoqueLote) {
-        await this.informix.query(`
+    }: UpdateEstoqueLote, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
             UPDATE
                 ESTOQUE_LOTE 
             SET
@@ -600,8 +654,10 @@ export class MaterialRepository {
         qtd_liberada,
         cod_empresa,
         cod_item
-    }) {
-        await this.informix.query(`
+    }: any, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
                 UPDATE
                     ESTOQUE 
                 SET
