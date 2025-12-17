@@ -291,7 +291,9 @@ export class MaterialRepository {
         )
     }
 
-    async getAllMaterialBalance(connection?: any): Promise<GetAllMaterialSchema> {
+    async getAllMaterialBalance(
+        connection?: any
+    ): Promise<GetAllMaterialSchema> {
         const db = connection || this.informix
 
         const response = await db.query(`
