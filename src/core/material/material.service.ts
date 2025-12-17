@@ -2,7 +2,6 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { MaterialRepository } from "./material.repository";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
-import { date } from "../../common/formatted-date";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve-body.schema";
 import { InformixService } from "@/informix/informix.service";
 
@@ -21,6 +20,8 @@ export class MaterialService {
         tracos_id
     }: MaterialReserveBodySchema, connection?: any) {
         const execute = async (conn: any) => {
+            const transactionDate = new Date()
+            
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item }, conn)
@@ -56,7 +57,6 @@ export class MaterialService {
                 num_conta_deb,
                 num_os,
                 qtd_reserva,
-                date: date
             }, conn)
 
             await this.materialRepository.createEstLocReserEnd({
@@ -118,6 +118,12 @@ export class MaterialService {
                 logixId: requisitionId.toString(),
                 tracosId: tracos_id
             })
+        }
+
+        if (connection) {
+            return await execute(connection);
+        } else {
+            return await this.informixService.transaction(execute);
         }
     }
 
@@ -207,6 +213,12 @@ export class MaterialService {
             await this.materialRepository.deleteDeParaId({
                 tracosId: tracos_id
             })
+        }
+
+        if (connection) {
+            return await execute(connection);
+        } else {
+            return await this.informixService.transaction(execute);
         }
     }
 

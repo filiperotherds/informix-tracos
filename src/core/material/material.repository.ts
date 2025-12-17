@@ -11,7 +11,6 @@ import {
 import { CreateEstLocReserEndSchema } from "./schemas/create-est-loc-reser-end.schema";
 import { CrateSupParResvEstSchema } from "./schemas/create-sup-par-resv-est.schema";
 import { getAllMaterialSchema, GetAllMaterialSchema } from "./schemas/get-all-material.schema";
-import { date, time } from "@/common/formatted-date";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateDeParaSchema } from "./schemas/de-para/create-de-para.schema";
 import { UpdateEstoque } from "./schemas/update-estoque.schema";
@@ -110,12 +109,13 @@ export class MaterialRepository {
         cod_equip,
         cod_item,
         cod_uni_funcio,
-        date,
         num_conta_deb,
         num_os,
         qtd_reserva
     }: CreateEstoqueLocReserSchema, connection?: any): Promise<number> {
         const db = connection || this.informix
+
+        const transactionDate = new Date();
 
         await db.query(`
             INSERT INTO ESTOQUE_LOC_RESER (
@@ -148,15 +148,15 @@ export class MaterialRepository {
                 num_os,
                 cod_equip,
                 'N',
-                date,
+                transactionDate,
                 num_conta_deb,
                 cod_uni_funcio,
                 'pcgeovan',
-                date,
+                transactionDate,
                 null,
                 null,
                 0,
-                date
+                transactionDate
             ]
         )
 
@@ -415,6 +415,8 @@ export class MaterialRepository {
     }: CreateEstoqueTransSchema, connection?: any) {
         const db = connection || this.informix
 
+        const transactionDate = new Date();
+
         await db.query(`
             INSERT INTO ESTOQUE_TRANS (
                 COD_EMPRESA,
@@ -449,14 +451,14 @@ export class MaterialRepository {
             [
                 cod_empresa,
                 cod_item,
-                date,
-                date,
+                transactionDate,
+                transactionDate,
                 num_docum,
                 qtd_movto,
                 num_conta,
                 num_secao_requis,
-                date,
-                time
+                transactionDate,
+                transactionDate
             ]
         )
 
@@ -474,6 +476,8 @@ export class MaterialRepository {
         qtd_movto
     }: CreateEstoqueTransEndSchema, connection?: any) {
         const db = connection || this.informix
+
+        const transactionDate = new Date()
 
         await db.query(`
             INSERT INTO ESTOQUE_TRANS_END (
@@ -518,7 +522,7 @@ export class MaterialRepository {
                 num_transac,
                 qtd_movto,
                 cod_item,
-                date
+                transactionDate
             ]
         )
     }
@@ -528,6 +532,8 @@ export class MaterialRepository {
         num_transac
     }: CreateEstoqueAuditoriaSchema, connection?: any) {
         const db = connection || this.informix
+
+        const transactionDate = new Date()
 
         await db.query(`
             INSERT INTO ESTOQUE_AUDITORIA (
@@ -541,7 +547,7 @@ export class MaterialRepository {
             [
                 cod_empresa,
                 num_transac,
-                date
+                transactionDate
             ]
         )
 

@@ -1,7 +1,6 @@
 import z from "zod";
 import { Injectable } from "@nestjs/common";
 import { InformixService } from "../../informix/informix.service";
-import { date, time } from "../../common/formatted-date";
 import { CreateSchema } from "./schemas/create.schema";
 
 const materialBalanceSchema = z.coerce.number()
@@ -25,6 +24,8 @@ export class ServiceOrderRepository {
 
     async create(createProps: CreateSchema, connection?: any) {
         const db = connection || this.informix
+
+        const transactionDate = new Date()
 
         const {
             cod_cent_trab,
@@ -67,10 +68,10 @@ export class ServiceOrderRepository {
                 num_os,
                 cod_cent_trab,
                 cod_cent_trab,
-                date,
-                time,
-                date,
-                date
+                transactionDate,
+                transactionDate,
+                transactionDate,
+                transactionDate
             ],
         );
 

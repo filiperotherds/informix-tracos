@@ -6,7 +6,7 @@ export const createEstoqueTransSchema = z.object({
     num_docum: z.string(),
     qtd_movto: z.number(),
     num_conta: z.string(),
-    num_secao_requis: z.string(),
+    num_secao_requis: z.string()
 });
 
 export type CreateEstoqueTransSchema = z.infer<typeof createEstoqueTransSchema>;

@@ -6,7 +6,6 @@ export const createEstoqueLocReserSchema = z.object({
   qtd_reserva: z.coerce.number(),
   num_os: z.string(),
   cod_equip: z.coerce.string(),
-  date: z.string(),
   num_conta_deb: z.string(),
   cod_uni_funcio: z.coerce.number(),
 });
