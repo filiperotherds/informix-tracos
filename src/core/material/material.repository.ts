@@ -116,6 +116,7 @@ export class MaterialRepository {
         const db = connection || this.informix
 
         const transactionDate = new Date();
+        const dateString = transactionDate.toISOString().slice(0, 10);
 
         await db.query(`
             INSERT INTO ESTOQUE_LOC_RESER (
@@ -148,15 +149,15 @@ export class MaterialRepository {
                 num_os,
                 cod_equip,
                 'N',
-                transactionDate,
+                dateString,
                 num_conta_deb,
                 cod_uni_funcio,
                 'pcgeovan',
-                transactionDate,
+                dateString,
                 null,
                 null,
                 0,
-                transactionDate
+                dateString
             ]
         )
 
@@ -416,6 +417,8 @@ export class MaterialRepository {
         const db = connection || this.informix
 
         const transactionDate = new Date();
+        const timeString = transactionDate.toTimeString().split(' ')[0];
+        const dateString = transactionDate.toISOString().slice(0, 10);
 
         await db.query(`
             INSERT INTO ESTOQUE_TRANS (
@@ -451,14 +454,14 @@ export class MaterialRepository {
             [
                 cod_empresa,
                 cod_item,
-                transactionDate,
-                transactionDate,
+                dateString,
+                dateString,
                 num_docum,
                 qtd_movto,
                 num_conta,
                 num_secao_requis,
-                transactionDate,
-                transactionDate
+                dateString,
+                timeString
             ]
         )
 
@@ -477,7 +480,7 @@ export class MaterialRepository {
     }: CreateEstoqueTransEndSchema, connection?: any) {
         const db = connection || this.informix
 
-        const transactionDate = new Date()
+        const dateString = new Date().toISOString().slice(0, 10);
 
         await db.query(`
             INSERT INTO ESTOQUE_TRANS_END (
@@ -522,7 +525,7 @@ export class MaterialRepository {
                 num_transac,
                 qtd_movto,
                 cod_item,
-                transactionDate
+                dateString
             ]
         )
     }
@@ -533,7 +536,7 @@ export class MaterialRepository {
     }: CreateEstoqueAuditoriaSchema, connection?: any) {
         const db = connection || this.informix
 
-        const transactionDate = new Date()
+        const dateString = new Date().toISOString().slice(0, 10);
 
         await db.query(`
             INSERT INTO ESTOQUE_AUDITORIA (
@@ -547,7 +550,7 @@ export class MaterialRepository {
             [
                 cod_empresa,
                 num_transac,
-                transactionDate
+                dateString
             ]
         )
 
