@@ -401,8 +401,6 @@ export class MaterialRepository {
             ]
         )
 
-        console.log(estoque_trans)
-
         return estoque_trans[0]
     }
 
@@ -417,8 +415,8 @@ export class MaterialRepository {
         const db = connection || this.informix
 
         const transactionDate = new Date();
-        const timeString = transactionDate.toTimeString().split(' ')[0];
-        const dateString = transactionDate.toISOString().slice(0, 10);
+        const timeString = transactionDate.toTimeString().slice(0, 8)
+        const dateString = transactionDate.toISOString().slice(0, 10)
 
         await db.query(`
             INSERT INTO ESTOQUE_TRANS (
@@ -489,36 +487,92 @@ export class MaterialRepository {
                 ENDERECO,
                 NUM_VOLUME,
                 QTD_MOVTO,
+                COD_GRADE_1,
+                COD_GRADE_2,
+                COD_GRADE_3,
+                COD_GRADE_4,
+                COD_GRADE_5,
+                DAT_HOR_PROD_INI,
+                DAT_HOR_PROD_FIM,
+                VLR_TEMPERATURA,
+                ENDERECO_ORIGEM,
+                NUM_PED_VEN,
+                NUM_SEQ_PED_VEN,
+                DAT_HOR_PRODUCAO,
+                DAT_HOR_VALIDADE,
+                NUM_PECA,
+                NUM_SERIE,
+                COMPRIMENTO,
+                LARGURA,
+                ALTURA,
+                DIAMETRO,
+                DAT_HOR_RESERV_1,
+                DAT_HOR_RESERV_2,
+                DAT_HOR_RESERV_3,
+                QTD_RESERV_1,
+                QTD_RESERV_2,
+                QTD_RESERV_3,
+                NUM_RESERV_1,
+                NUM_RESERV_2,
+                NUM_RESERV_3,
+                TEX_RESERVADO,
+                CUS_UNIT_MOVTO_P,
+                CUS_UNIT_MOVTO_F,
+                CUS_TOT_MOVTO_P,
+                CUS_TOT_MOVTO_F,
                 COD_ITEM,
                 DAT_MOVTO,
                 COD_OPERACAO,
                 IES_TIP_MOVTO,
                 NUM_PROG,
-                cod_grade_1,
-                cod_grade_2,
-                cod_grade_3,
-                cod_grade_4,
-                cod_grade_5,
-                dat_hor_prod_ini,
-                dat_hor_prod_fim
+                IDENTIF_ESTOQUE,
+                DEPOSIT
             ) VALUES (
                 ?,
                 ?,
                 '',
                 0,
                 ?,
+                '',
+                '',
+                '',
+                '',
+                '',
+                '1900-01-01 00:00:00',
+                '1900-01-01 00:00:00',
+                0.00,
+                '',
+                0,
+                0,
+                '1900-01-01 00:00:00',
+                '1900-01-01 00:00:00',
+                '',
+                '',
+                0,
+                0,
+                0,
+                0,
+                '1900-01-01 00:00:00',
+                '1900-01-01 00:00:00',
+                '1900-01-01 00:00:00',
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                '',
+                0,
+                0,
+                0,
+                0,
                 ?,
                 ?,
                 'RM',
                 'R',
                 'SUP0710',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '01/01/1900 00:00:00',
-                '01/01/1900 00:00:00'
+                'NULL',
+                'NULL'
             )`,
             [
                 cod_empresa,

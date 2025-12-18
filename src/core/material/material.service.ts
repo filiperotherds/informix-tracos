@@ -19,9 +19,7 @@ export class MaterialService {
         qtd_reserva,
         tracos_id
     }: MaterialReserveBodySchema, connection?: any) {
-        const execute = async (conn: any) => {
-            const transactionDate = new Date()
-            
+        const execute = async (conn: any) => {            
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item }, conn)
