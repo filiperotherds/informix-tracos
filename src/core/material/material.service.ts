@@ -12,7 +12,7 @@ export class MaterialService {
         private equipmentRepository: EquipmentRepository,
         private informixService: InformixService
     ) { }
-
+    
     async createReserve({
         cod_item,
         num_os,

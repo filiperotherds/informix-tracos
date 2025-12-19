@@ -57,11 +57,11 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
     try {
       await connection.query('BEGIN WORK');
       const result = await callback(connection);
-      await connection.query('COMMIT WORK');
+      await connection.query('COMMIT');
       return result;
     } catch (error) {
       try {
-        await connection.query('ROLLBACK WORK');
+        await connection.query('ROLLBACK');
       } catch (rollbackError) {
         this.logger.error('Rollback failed', rollbackError);
       }
