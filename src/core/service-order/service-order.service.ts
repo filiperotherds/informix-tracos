@@ -20,8 +20,6 @@ export class ServiceOrderService {
                 throw new ConflictException('Order with same ID already exists.');
             }
 
-            console.log(cod_equip, num_os)
-
             const equipment = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
 
             if (!equipment) {
@@ -36,6 +34,29 @@ export class ServiceOrderService {
                 cod_cent_trab: cod_cent_trab,
                 cod_equip: cod_equip
             }, connection)
+        })
+    }
+
+    async finish({
+        cod_equip,
+        num_os
+    }: CreateServiceOrderBodySchema) {
+        return this.informixService.transaction(async (connection) => {
+
+            const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
+
+            await this.serviceOrderRepository.updateOsMin({
+                cod_empresa,
+                num_os,
+                ies_status_os: 'R'
+            })
+
+            await this.serviceOrderRepository.updateAtivOsn({
+                cod_empresa,
+                cod_equip,
+                num_os,
+                des_serv_exec: 'Ordem realizada via TracOs'
+            })
         })
     }
 }

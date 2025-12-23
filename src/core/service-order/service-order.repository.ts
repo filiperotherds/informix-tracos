@@ -2,6 +2,8 @@ import z from "zod";
 import { Injectable } from "@nestjs/common";
 import { InformixService } from "../../informix/informix.service";
 import { CreateSchema } from "./schemas/create.schema";
+import { UpdateOsMin } from "./schemas/update-os-min.schema";
+import { UpdateAtivOsn } from "./schemas/update-ativ-osn.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -22,17 +24,20 @@ export class ServiceOrderRepository {
         return order[0]
     }
 
-    async create(createProps: CreateSchema, connection?: any) {
+    async create({
+        cod_cent_trab,
+        cod_empresa,
+        num_os,
+        cod_equip
+    }: CreateSchema, connection?: any) {
         const db = connection || this.informix
 
         const transactionDate = new Date()
 
-        const {
-            cod_cent_trab,
-            cod_empresa,
-            num_os,
-            cod_equip
-        } = createProps
+        const dateString = transactionDate.toISOString().slice(0, 10)
+        const timeString = transactionDate.toTimeString().slice(0, 8)
+
+        console.log(transactionDate)
 
         await db.query(`
             INSERT INTO os_min (
@@ -62,16 +67,16 @@ export class ServiceOrderRepository {
                 hor_conclusao,
                 cod_mot_repr,
                 cod_mot_canc)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 3095, 3095, 'N', 'R', null, 0, 1, null, null, null, null, null, null, null, null, null, null, null)`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 3095, 3095, 'N', 'A', null, 0, 1, null, null, null, null, null, null, null, null, null, null, null)`,
             [
                 cod_empresa,
                 num_os,
                 cod_cent_trab,
                 cod_cent_trab,
-                transactionDate,
-                transactionDate,
-                transactionDate,
-                transactionDate
+                dateString,
+                timeString,
+                dateString,
+                dateString
             ],
         );
 
@@ -103,5 +108,65 @@ export class ServiceOrderRepository {
                 cod_cent_trab
             ]
         );
+    }
+
+    async updateOsMin({
+        ies_status_os,
+        cod_empresa,
+        num_os
+    }: UpdateOsMin, connection?: any) {
+        const db = connection || this.informix
+
+        const transactionDate = new Date()
+
+        const dateString = transactionDate.toISOString().slice(0, 10)
+        const timeString = transactionDate.toTimeString().slice(0, 8)
+
+        await db.query(`
+            UPDATE
+                os_min
+            SET 
+                ies_status_os = ?,
+                dat_ini_exec  = ?,
+                dat_conclusao = ?,
+                hor_conclusao = ?
+            WHERE
+                cod_empresa = ?
+                AND num_os = ?
+            `,
+            [
+                ies_status_os,
+                dateString,
+                dateString,
+                timeString,
+                cod_empresa,
+                num_os
+            ]);
+    }
+
+    async updateAtivOsn({
+        des_serv_exec,
+        cod_empresa,
+        num_os,
+        cod_equip
+    }: UpdateAtivOsn, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            UPDATE
+                ativ_osn
+            SET 
+                des_serv_exec = ?,
+            WHERE
+                ativ_osn.cod_empresa = ?
+                AND ativ_osn.num_os = ?
+                AND ativ_osn.cod_equip = ?
+            `,
+            [
+                des_serv_exec,
+                cod_empresa,
+                num_os,
+                cod_equip
+            ]);
     }
 }
