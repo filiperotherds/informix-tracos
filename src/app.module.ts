@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaService } from './prisma/prisma.service';
 import { envSchema } from './env';
 import { AuthModule } from './auth/auth.module';
@@ -18,6 +19,7 @@ import { ServiceOrderModule } from './core/service-order/service-order.module';
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     MaterialModule,
     EquipmentModule,
