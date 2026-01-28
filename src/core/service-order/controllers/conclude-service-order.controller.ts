@@ -1,14 +1,14 @@
 import {
-    Body, Controller,
-    Patch, UseGuards,
-    UsePipes
+  Body, Controller,
+  Patch, UseGuards,
+  UsePipes
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import {
-    type CreateServiceOrderBodySchema,
-    createServiceOrderBodySchema
+  type CreateServiceOrderBodySchema,
+  createServiceOrderBodySchema
 } from '../schemas/create-service-order.schema';
 
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation-pipe';
@@ -24,7 +24,7 @@ export class FinishServiceOrder {
     private serviceOrderService: ServiceOrderService
   ) { }
 
-  @Patch()
+  @Patch('/conclude')
   @ApiBody({
     type: CreateServiceOrderDto,
   })
@@ -36,8 +36,8 @@ export class FinishServiceOrder {
     } = body;
 
     await this.serviceOrderService.finish({
-      cod_equip,
-      num_os
+      cod_equip: cod_equip,
+      num_os: num_os
     })
   }
 }

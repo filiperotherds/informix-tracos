@@ -29,6 +29,8 @@ export class CreateMaterialReserveController {
             tracos_id
         } = body;
 
+        console.log('Req recebida: ', body)
+
         await this.materialService.createReserve({
             cod_item: cod_item,
             num_os: num_os,

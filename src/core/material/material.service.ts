@@ -12,17 +12,21 @@ export class MaterialService {
         private equipmentRepository: EquipmentRepository,
         private informixService: InformixService
     ) { }
-    
+
     async createReserve({
         cod_item,
         num_os,
         qtd_reserva,
         tracos_id
     }: MaterialReserveBodySchema, connection?: any) {
-        const execute = async (conn: any) => {            
+        const execute = async (conn: any) => {
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
+            console.log(cod_empresa, cod_uni_funcio, cod_equip)
+
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item }, conn)
+
+            console.log(balance)
 
             if (balance < qtd_reserva) {
                 throw new ConflictException('Insufficient material balance.')
@@ -33,6 +37,8 @@ export class MaterialService {
                 cod_uni_funcio
             }, conn)
 
+            console.log(cod_centro_custo)
+
             if (!cod_centro_custo) {
                 throw new ConflictException('Cost center not found.')
             }
@@ -42,10 +48,14 @@ export class MaterialService {
                 cod_item
             }, conn)
 
+            console.log(cod_tip_despesa)
+
             const num_conta_deb = formattedDebitAccount({
                 cod_centro_custo,
                 cod_tip_despesa,
             })
+
+            console.log(num_conta_deb)
 
             const requisitionId = await this.materialRepository.createEstoqueLocReser({
                 cod_empresa,
@@ -56,6 +66,8 @@ export class MaterialService {
                 num_os,
                 qtd_reserva,
             }, conn)
+
+            console.log(requisitionId)
 
             await this.materialRepository.createEstLocReserEnd({
                 cod_empresa: cod_empresa,
@@ -139,23 +151,33 @@ export class MaterialService {
                 cod_uni_funcio
             }, conn)
 
+            console.log("centro de custo recebido", cod_centro_custo)
+
             const cod_tip_despesa = await this.materialRepository.getExpenseType({
                 cod_empresa,
                 cod_item
             }, conn)
+
+            console.log("Tipo Despesa Recebido", cod_tip_despesa)
 
             const num_conta_deb = formattedDebitAccount({
                 cod_centro_custo: cod_centro_custo,
                 cod_tip_despesa: cod_tip_despesa,
             })
 
+            console.log("Num Conta Deb: ", num_conta_deb)
+
             const num_transac = await this.materialRepository.getNumTransac(tracos_id)
+
+            console.log("Num Transac: ", num_transac)
 
             const estoque_trans = await this.materialRepository.getEstoqueTrans({
                 cod_empresa,
                 cod_item,
                 num_transac,
             }, conn)
+
+            console.log("Estoque Trans: ", estoque_trans)
 
             if (!estoque_trans) {
                 throw new ConflictException("Doesn't found registers at ESTOQUE_TRANS.")
@@ -169,6 +191,8 @@ export class MaterialService {
                 num_secao_requis: estoque_trans.num_secao_requis,
                 qtd_movto: estoque_trans.qtd_movto
             }, conn)
+
+            console.log("New Num Transac: ", new_num_transac)
 
             await this.materialRepository.createEstoqueTransEnd({
                 cod_empresa,
@@ -188,7 +212,11 @@ export class MaterialService {
                 cod_item
             }, conn)
 
+            console.log("Estoque Lote Ender: ", estoqueLoteEnder)
+
             const saldo_reversao = Number(estoqueLoteEnder.qtd_saldo) + Number(estoque_trans.qtd_movto)
+
+            console.log("Saldo Reversão: ", saldo_reversao)
 
             await this.materialRepository.updateEstoqueLoteEnder({
                 cod_empresa,
@@ -208,7 +236,7 @@ export class MaterialService {
                 qtd_liberada: saldo_reversao
             }, conn)
 
-            await this.materialRepository.deleteDeParaId({
+            await this.materialRepository.cancelDeParaId({
                 tracosId: tracos_id
             })
         }

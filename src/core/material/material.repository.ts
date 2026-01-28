@@ -42,16 +42,31 @@ export class MaterialRepository {
             data: {
                 logixId,
                 tracosId,
+                status: "PENDENTE"
             }
         })
     }
 
-    async deleteDeParaId({ tracosId }: DeleteDeParaSchema) {
-        await this.prisma.deParaReserva.deleteMany({
+    async cancelDeParaId({ tracosId }: DeleteDeParaSchema) {
+        await this.prisma.deParaReserva.updateMany({
             where: {
-                tracosId
+                tracosId,
+                status: "EFETIVADA"
+            },
+            data: {
+                status: "CANCELADA"
             }
         })
+    }
+
+    async getPendingRequests() {
+        const pendingRequests = await this.prisma.deParaReserva.findMany({
+            where: {
+                status: "PENDENTE"
+            }
+        })
+
+        return pendingRequests
     }
 
     /* ===== Operações De/Para ===== */
@@ -582,6 +597,8 @@ export class MaterialRepository {
                 dateString
             ]
         )
+
+        console.log("Estoque Trans End Criado")
     }
 
     async createEstoqueAuditoria({
@@ -639,6 +656,8 @@ export class MaterialRepository {
                 new_num_transac
             ]
         )
+
+        console.log("Estoque Trans Rev Criado")
     }
 
     async getEstoqueLoteEnder({
@@ -688,6 +707,8 @@ export class MaterialRepository {
                 num_transac
             ]
         )
+
+        console.log("Estoque Lote Ender Atualizado")
     }
 
     async updateEstoqueLote({
@@ -713,6 +734,8 @@ export class MaterialRepository {
                 cod_item
             ]
         )
+
+        console.log("Estoque Lote Atualizado")
     }
 
     async updateEstoqueQtdLiberada({
@@ -736,5 +759,7 @@ export class MaterialRepository {
                 cod_item
             ]
         )
+
+        console.log("Estoque Qtd Liberada Atualizado")
     }
 }

@@ -5,7 +5,7 @@ import { EquipmentService } from "../equipment/equipment.service";
 import { ServiceOrderService } from "./service-order.service";
 import { EquipmentModule } from "../equipment/equipment.module";
 import { ServiceOrderRepository } from "./service-order.repository";
-import { FinishServiceOrder } from "./controllers/finish-service-order.controller";
+import { FinishServiceOrder } from "./controllers/conclude-service-order.controller";
 
 @Module({
     imports: [

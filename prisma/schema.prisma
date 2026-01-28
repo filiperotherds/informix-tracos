@@ -18,8 +18,9 @@ model User {
 }
 
 model DeParaReserva {
-  tracosId String @map("tracos_id")
-  logixId  String @map("logix_id")
+  tracosId String  @map("tracos_id")
+  logixId  String  @map("logix_id")
+  status   String? @db.VarChar(20)
 
   @@id([tracosId, logixId])
   @@index([tracosId])

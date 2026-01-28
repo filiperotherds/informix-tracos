@@ -45,11 +45,15 @@ export class ServiceOrderService {
 
             const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
 
+            console.log(cod_cent_trab, cod_empresa)
+
             await this.serviceOrderRepository.updateOsMin({
                 cod_empresa,
                 num_os,
                 ies_status_os: 'R'
             })
+
+            console.log("update os min")
 
             await this.serviceOrderRepository.updateAtivOsn({
                 cod_empresa,
@@ -57,6 +61,8 @@ export class ServiceOrderService {
                 num_os,
                 des_serv_exec: 'Ordem realizada via TracOs'
             })
+
+            console.log("update ativ osn")
         })
     }
 }

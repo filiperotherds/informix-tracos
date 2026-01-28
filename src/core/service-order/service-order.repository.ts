@@ -156,7 +156,7 @@ export class ServiceOrderRepository {
             UPDATE
                 ativ_osn
             SET 
-                des_serv_exec = ?,
+                des_serv_exec = ?
             WHERE
                 ativ_osn.cod_empresa = ?
                 AND ativ_osn.num_os = ?
