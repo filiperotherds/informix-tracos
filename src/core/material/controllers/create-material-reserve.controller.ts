@@ -21,21 +21,17 @@ export class CreateMaterialReserveController {
         description: 'Create a new material reserve',
     })
     @UsePipes(new ZodValidationPipe(materialReserveBodySchema))
-    async handle(@Body() body: MaterialReserveBodySchema) {
-        const {
+    async handle(@Body() {
+        cod_item,
+        num_os,
+        qtd_reserva,
+        tracos_id
+    }: MaterialReserveBodySchema) {
+        await this.materialService.createReserve({
             cod_item,
             num_os,
             qtd_reserva,
             tracos_id
-        } = body;
-
-        console.log('Req recebida: ', body)
-
-        await this.materialService.createReserve({
-            cod_item: cod_item,
-            num_os: num_os,
-            qtd_reserva: qtd_reserva,
-            tracos_id: tracos_id
         })
     }
 }

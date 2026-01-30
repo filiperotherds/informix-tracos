@@ -4,6 +4,7 @@ import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve-body.schema";
 import { InformixService } from "@/informix/informix.service";
+import { UpdateMaterialReserveBodySchema } from "./controllers/update-material-reserve.controller";
 
 @Injectable()
 export class MaterialService {
@@ -22,13 +23,16 @@ export class MaterialService {
         const execute = async (conn: any) => {
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
-            console.log(cod_empresa, cod_uni_funcio, cod_equip)
+            const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, conn)
 
-            const balance = await this.materialRepository.getMaterialBalance({ cod_empresa: cod_empresa, cod_item: cod_item }, conn)
+            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+                cod_empresa,
+                cod_item
+            }, conn)
 
-            console.log(balance)
+            const availableBalance = balance - reservedMaterial
 
-            if (balance < qtd_reserva) {
+            if (availableBalance < qtd_reserva) {
                 throw new ConflictException('Insufficient material balance.')
             }
 
@@ -36,8 +40,6 @@ export class MaterialService {
                 cod_empresa,
                 cod_uni_funcio
             }, conn)
-
-            console.log(cod_centro_custo)
 
             if (!cod_centro_custo) {
                 throw new ConflictException('Cost center not found.')
@@ -66,8 +68,6 @@ export class MaterialService {
                 num_os,
                 qtd_reserva,
             }, conn)
-
-            console.log(requisitionId)
 
             await this.materialRepository.createEstLocReserEnd({
                 cod_empresa: cod_empresa,
@@ -118,10 +118,12 @@ export class MaterialService {
                 parametro_num: null
             }, conn)
 
+            const new_qtd_reservada = reservedMaterial + qtd_reserva
+
             await this.materialRepository.updateEstoqueQtdReservada({
                 cod_empresa,
                 cod_item,
-                qtd_reserva
+                qtd_reserva: new_qtd_reservada
             }, conn)
 
             await this.materialRepository.createDeParaId({
@@ -151,33 +153,23 @@ export class MaterialService {
                 cod_uni_funcio
             }, conn)
 
-            console.log("centro de custo recebido", cod_centro_custo)
-
             const cod_tip_despesa = await this.materialRepository.getExpenseType({
                 cod_empresa,
                 cod_item
             }, conn)
-
-            console.log("Tipo Despesa Recebido", cod_tip_despesa)
 
             const num_conta_deb = formattedDebitAccount({
                 cod_centro_custo: cod_centro_custo,
                 cod_tip_despesa: cod_tip_despesa,
             })
 
-            console.log("Num Conta Deb: ", num_conta_deb)
-
             const num_transac = await this.materialRepository.getNumTransac(tracos_id)
-
-            console.log("Num Transac: ", num_transac)
 
             const estoque_trans = await this.materialRepository.getEstoqueTrans({
                 cod_empresa,
                 cod_item,
                 num_transac,
             }, conn)
-
-            console.log("Estoque Trans: ", estoque_trans)
 
             if (!estoque_trans) {
                 throw new ConflictException("Doesn't found registers at ESTOQUE_TRANS.")
@@ -191,8 +183,6 @@ export class MaterialService {
                 num_secao_requis: estoque_trans.num_secao_requis,
                 qtd_movto: estoque_trans.qtd_movto
             }, conn)
-
-            console.log("New Num Transac: ", new_num_transac)
 
             await this.materialRepository.createEstoqueTransEnd({
                 cod_empresa,
@@ -251,24 +241,35 @@ export class MaterialService {
     async updateReserveValue({
         cod_item,
         num_os,
-        qtd_reserva,
-        tracos_id
-    }) {
+        tracos_id,
+        old_value,
+        new_value
+    }: UpdateMaterialReserveBodySchema) {
 
         await this.informixService.transaction(async (connection) => {
-            await this.cancelReserve({
-                cod_item,
-                num_os,
-                qtd_reserva,
-                tracos_id
+            const logixId = await this.materialRepository.getLogixId(tracos_id)
+
+            const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
+
+            const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
+
+            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+                cod_empresa,
+                cod_item
             }, connection)
 
-            await this.createReserve({
-                cod_item,
-                num_os,
-                qtd_reserva,
-                tracos_id
-            }, connection)
+            const newReservedMaterial = reservedMaterial - old_value + new_value
+
+            const availableBalance = balance - newReservedMaterial
+
+            if (availableBalance < new_value) {
+                throw new ConflictException('Insufficient material balance.')
+            }
+
+
+
+            //ATUALIZAÇÕES AQUI
+
         })
     }
 

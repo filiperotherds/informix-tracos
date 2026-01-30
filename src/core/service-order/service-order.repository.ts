@@ -4,6 +4,7 @@ import { InformixService } from "../../informix/informix.service";
 import { CreateSchema } from "./schemas/create.schema";
 import { UpdateOsMin } from "./schemas/update-os-min.schema";
 import { UpdateAtivOsn } from "./schemas/update-ativ-osn.schema";
+import { UpdateCodEquipSchema } from "./schemas/update-cod-equip.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -37,20 +38,18 @@ export class ServiceOrderRepository {
         const dateString = transactionDate.toISOString().slice(0, 10)
         const timeString = transactionDate.toTimeString().slice(0, 8)
 
-        console.log(transactionDate)
-
         await db.query(`
             INSERT INTO os_min (
                 cod_empresa,
                 num_os,
-                num_matricula_sol,
-                num_matricula_rec,
+                cod_cent_trab_resp,
+                cod_cent_trab_sol,
                 dat_solic,
                 hor_solic,
                 dat_prg_ini_exec,
                 dat_prg_fim_exec,
-                cod_cent_trab_resp,
-                cod_cent_trab_sol,
+                num_matricula_sol,
+                num_matricula_rec,
                 ies_tip_os,
                 ies_status_os,
                 cod_projeto,
@@ -168,5 +167,48 @@ export class ServiceOrderRepository {
                 num_os,
                 cod_equip
             ]);
+    }
+
+    async updateCodEquip({
+        num_os,
+        cod_equip,
+        cod_empresa,
+        cod_cent_trab
+    }: UpdateCodEquipSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+                UPDATE
+                    os_min
+                SET
+                    cod_cent_trab_sol = ?,
+                    cod_cent_trab_resp = ?
+                WHERE
+                    cod_empresa = ?
+                    AND num_os = ?`,
+            [
+                cod_cent_trab,
+                cod_cent_trab,
+                cod_empresa,
+                num_os
+            ]
+        )
+
+        await db.query(`
+                UPDATE
+                    ativ_osn
+                SET
+                    cod_equip = ?,
+                    centro_trabalho = ?
+                WHERE
+                    cod_empresa = ?
+                    AND num_os = ?`,
+            [
+                cod_equip,
+                cod_cent_trab,
+                cod_empresa,
+                num_os
+            ]
+        )
     }
 }

@@ -3,6 +3,7 @@ import { ServiceOrderRepository } from "./service-order.repository";
 import { CreateServiceOrderBodySchema } from "./schemas/create-service-order.schema";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { InformixService } from "@/informix/informix.service";
+import { UpdateCodEquipSchema } from "./schemas/update-cod-equip.schema";
 
 @Injectable()
 export class ServiceOrderService {
@@ -45,15 +46,11 @@ export class ServiceOrderService {
 
             const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
 
-            console.log(cod_cent_trab, cod_empresa)
-
             await this.serviceOrderRepository.updateOsMin({
                 cod_empresa,
                 num_os,
                 ies_status_os: 'R'
             })
-
-            console.log("update os min")
 
             await this.serviceOrderRepository.updateAtivOsn({
                 cod_empresa,
@@ -61,8 +58,22 @@ export class ServiceOrderService {
                 num_os,
                 des_serv_exec: 'Ordem realizada via TracOs'
             })
+        })
+    }
 
-            console.log("update ativ osn")
+    async updateEquip({
+        cod_equip,
+        num_os
+    }: UpdateCodEquipSchema, connection?: any) {
+        const equipment = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
+
+        const { cod_cent_trab, cod_empresa } = equipment
+
+        await this.serviceOrderRepository.updateCodEquip({
+            cod_empresa,
+            cod_equip,
+            num_os,
+            cod_cent_trab,
         })
     }
 }
