@@ -7,14 +7,14 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import {
-  type CreateServiceOrderBodySchema,
-  createServiceOrderBodySchema
-} from '../schemas/create-service-order.schema';
+  type ServiceOrderBodySchema,
+  serviceOrderBodySchema
+} from '../schemas/body/service-order.schema';
 
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation-pipe';
 import { ServiceOrderService } from '../service-order.service';
 
-class CreateServiceOrderDto extends createZodDto(createServiceOrderBodySchema) { }
+class CreateServiceOrderDto extends createZodDto(serviceOrderBodySchema) { }
 
 @ApiTags('Ordem de Serviço')
 @Controller('/orders')
@@ -28,8 +28,8 @@ export class FinishServiceOrder {
   @ApiBody({
     type: CreateServiceOrderDto,
   })
-  @UsePipes(new ZodValidationPipe(createServiceOrderBodySchema))
-  async handle(@Body() body: CreateServiceOrderBodySchema) {
+  @UsePipes(new ZodValidationPipe(serviceOrderBodySchema))
+  async handle(@Body() body: ServiceOrderBodySchema) {
     const {
       num_os,
       cod_equip

@@ -10,8 +10,11 @@ import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation-pipe';
 import { ServiceOrderService } from '../service-order.service';
 import { updateCodEquipSchema } from '../schemas/update-cod-equip.schema';
-
-class UpdateCodEquipDto extends createZodDto(updateCodEquipSchema) { }
+import { ServiceOrderDto } from '../service-order.dto';
+import {
+    serviceOrderBodySchema,
+    type ServiceOrderBodySchema
+} from '../schemas/body/service-order.schema';
 
 @ApiTags('Ordem de Serviço')
 @Controller('/orders')
@@ -23,10 +26,10 @@ export class UpdateServiceOrder {
 
     @Patch()
     @ApiBody({
-        type: UpdateCodEquipDto,
+        type: ServiceOrderDto,
     })
-    @UsePipes(new ZodValidationPipe(updateCodEquipSchema))
-    async handle(@Body() body: UpdateCodEquipDto) {
+    @UsePipes(new ZodValidationPipe(serviceOrderBodySchema))
+    async handle(@Body() body: ServiceOrderBodySchema) {
         const {
             num_os,
             cod_equip,

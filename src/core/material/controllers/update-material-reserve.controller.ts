@@ -3,19 +3,11 @@ import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "@/common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
-import { MaterialReserveDto } from "../material-reserve.dto";
-
-import z from "zod";
-
-export const updateMaterialReserveBodySchema = z.object({
-    cod_item: z.coerce.string(),
-    num_os: z.string(),
-    tracos_id: z.coerce.string(),
-    new_value: z.coerce.number(),
-    old_value: z.coerce.number(),
-});
-
-export type UpdateMaterialReserveBodySchema = z.infer<typeof updateMaterialReserveBodySchema>;
+import { UpdateMaterialReserveDto } from "../material-reserve.dto";
+import {
+    type UpdateMaterialReserveBodySchema,
+    updateMaterialReserveBodySchema
+} from "../schemas/body/update-material-reserve.schema";
 
 @ApiTags('Material')
 @Controller('/material')
@@ -25,23 +17,17 @@ export class UpdateMaterialReserveController {
 
     @Patch('/reserve')
     @ApiBody({
-        type: MaterialReserveDto,
+        type: UpdateMaterialReserveDto,
         description: 'Update an existing material reserve',
     })
     @UsePipes(new ZodValidationPipe(updateMaterialReserveBodySchema))
     async handle(@Body() {
-        cod_item,
-        num_os,
         tracos_id,
         new_value,
-        old_value
     }: UpdateMaterialReserveBodySchema) {
         await this.materialService.updateReserveValue({
-            cod_item,
-            num_os,
             tracos_id,
             new_value,
-            old_value
         })
     }
 }

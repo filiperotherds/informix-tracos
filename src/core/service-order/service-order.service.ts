@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { ServiceOrderRepository } from "./service-order.repository";
-import { CreateServiceOrderBodySchema } from "./schemas/create-service-order.schema";
+import { ServiceOrderBodySchema } from "./schemas/body/service-order.schema";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { InformixService } from "@/informix/informix.service";
 import { UpdateCodEquipSchema } from "./schemas/update-cod-equip.schema";
@@ -13,7 +13,7 @@ export class ServiceOrderService {
         private informixService: InformixService
     ) { }
 
-    async create({ cod_equip, num_os }: CreateServiceOrderBodySchema, connection?: any) {
+    async create({ cod_equip, num_os }: ServiceOrderBodySchema, connection?: any) {
         return this.informixService.transaction(async (connection) => {
             const orderWithSameId = await this.serviceOrderRepository.getOrderById(num_os, connection)
 
@@ -41,7 +41,7 @@ export class ServiceOrderService {
     async finish({
         cod_equip,
         num_os
-    }: CreateServiceOrderBodySchema) {
+    }: ServiceOrderBodySchema) {
         return this.informixService.transaction(async (connection) => {
 
             const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
@@ -65,9 +65,7 @@ export class ServiceOrderService {
         cod_equip,
         num_os
     }: UpdateCodEquipSchema, connection?: any) {
-        const equipment = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
-
-        const { cod_cent_trab, cod_empresa } = equipment
+        const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
 
         await this.serviceOrderRepository.updateCodEquip({
             cod_empresa,

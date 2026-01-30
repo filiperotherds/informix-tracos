@@ -70,13 +70,20 @@ export class MaterialRepository {
     }
 
     async getLogixId(tracosId: string) {
-        const logixId = await this.prisma.deParaReserva.findFirst({
+        const result = await this.prisma.deParaReserva.findFirst({
             where: {
                 tracosId
+            },
+            select: {
+                logixId: true,
             }
         })
 
-        return logixId
+        if (!result) {
+            throw new BadRequestException("Requisition ID not found.")
+        }
+
+        return Number(result.logixId)
     }
 
     /* ===== Operações De/Para ===== */
@@ -787,6 +794,30 @@ export class MaterialRepository {
 
     // UPDATE QTD_RESERVADA
 
+    async getEstoqueLocReserData({
+        logixId
+    }: {
+        logixId: number
+    }, connection?: any) {
+        const db = connection || this.informix
+
+        const result = await db.query(`
+            SELECT
+                cod_empresa,
+                cod_item,
+                qtd_reservada AS old_value
+            FROM
+                ESTOQUE_LOC_RESER
+            WHERE
+                num_reserva = ?`,
+            [
+                logixId
+            ]
+        )
+
+        return result[0]
+    }
+
     async updateEstoqueLocReser({
         qtdReserva,
         logixId
@@ -803,6 +834,56 @@ export class MaterialRepository {
                     qtd_reservada = ?
                 WHERE
                     num_reserva = ?`,
+            [
+                qtdReserva,
+                logixId
+            ]
+        )
+    }
+
+    async updateSupParResvEst({
+        qtdReserva,
+        logixId
+    }: {
+        qtdReserva: number,
+        logixId: number
+    }, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            UPDATE
+                SUP_PAR_RESV_EST
+            SET
+                parametro_val = ?
+            WHERE
+                parametro = "qtd_resv_origem"
+                AND reserva = ?`,
+            [
+                qtdReserva,
+                logixId
+            ]
+        )
+    }
+
+    async updateQtdReservadaEstoque({
+        qtdReserva,
+        cod_empresa,
+        cod_item
+    }: {
+        qtdReserva: number,
+        cod_empresa: string,
+        cod_item: string
+    }, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            UPDATE 
+                estoque
+            SET
+                qtd_reservada = ?
+            WHERE
+                cod_empresa = ?
+                AND cod_item = ?`,
             [
 
             ]

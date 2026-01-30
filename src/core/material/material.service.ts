@@ -2,9 +2,9 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { MaterialRepository } from "./material.repository";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
-import { MaterialReserveBodySchema } from "./schemas/body/material-reserve-body.schema";
+import { MaterialReserveBodySchema } from "./schemas/body/material-reserve.schema";
 import { InformixService } from "@/informix/informix.service";
-import { UpdateMaterialReserveBodySchema } from "./controllers/update-material-reserve.controller";
+import { UpdateMaterialReserveBodySchema } from "./schemas/body/update-material-reserve.schema";
 
 @Injectable()
 export class MaterialService {
@@ -50,14 +50,10 @@ export class MaterialService {
                 cod_item
             }, conn)
 
-            console.log(cod_tip_despesa)
-
             const num_conta_deb = formattedDebitAccount({
                 cod_centro_custo,
                 cod_tip_despesa,
             })
-
-            console.log(num_conta_deb)
 
             const requisitionId = await this.materialRepository.createEstoqueLocReser({
                 cod_empresa,
@@ -239,17 +235,14 @@ export class MaterialService {
     }
 
     async updateReserveValue({
-        cod_item,
-        num_os,
         tracos_id,
-        old_value,
         new_value
     }: UpdateMaterialReserveBodySchema) {
 
         await this.informixService.transaction(async (connection) => {
             const logixId = await this.materialRepository.getLogixId(tracos_id)
 
-            const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
+            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId })
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
 
@@ -266,9 +259,21 @@ export class MaterialService {
                 throw new ConflictException('Insufficient material balance.')
             }
 
+            await this.materialRepository.updateEstoqueLocReser({
+                qtdReserva: new_value,
+                logixId
+            })
 
+            await this.materialRepository.updateSupParResvEst({
+                qtdReserva: new_value,
+                logixId
+            })
 
-            //ATUALIZAÇÕES AQUI
+            await this.materialRepository.updateQtdReservadaEstoque({
+                qtdReserva: newReservedMaterial,
+                cod_empresa,
+                cod_item
+            })
 
         })
     }
