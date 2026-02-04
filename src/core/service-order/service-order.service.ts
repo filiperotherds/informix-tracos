@@ -50,14 +50,14 @@ export class ServiceOrderService {
                 cod_empresa,
                 num_os,
                 ies_status_os: 'R'
-            })
+            }, connection)
 
             await this.serviceOrderRepository.updateAtivOsn({
                 cod_empresa,
                 cod_equip,
                 num_os,
                 des_serv_exec: 'Ordem realizada via TracOs'
-            })
+            }, connection)
         })
     }
 
