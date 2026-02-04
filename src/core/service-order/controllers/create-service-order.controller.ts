@@ -5,13 +5,13 @@ import {
   UsePipes
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import {
   type ServiceOrderBodySchema,
   serviceOrderBodySchema
 } from '../schemas/body/service-order.schema';
 
-import { ZodValidationPipe } from '../../../common/pipes/zod-validation-pipe';
+import { ZodValidationPipe } from '@/common/pipes/zod-validation-pipe';
 import { ServiceOrderService } from '../service-order.service';
 import { ServiceOrderDto } from '../service-order.dto';
 
@@ -20,7 +20,7 @@ import { ServiceOrderDto } from '../service-order.dto';
 @UseGuards(JwtAuthGuard)
 export class CreateServiceOrder {
   constructor(
-    private serviceOrderService: ServiceOrderService
+    private readonly serviceOrderService: ServiceOrderService
   ) { }
 
   @Post()
