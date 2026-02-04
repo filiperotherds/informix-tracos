@@ -25,22 +25,14 @@ export class MaterialService {
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, conn)
 
-            console.log(balance)
-
             const reservedMaterial = await this.materialRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, conn)
 
-            console.log(reservedMaterial)
-
             const availableBalance = balance - reservedMaterial
 
-            console.log(availableBalance)
-
             const new_qtd_reservada = reservedMaterial + Number(qtd_reserva)
-
-            console.log(new_qtd_reservada)
 
             if (availableBalance < Number(qtd_reserva)) {
                 throw new ConflictException('Insufficient material balance.')
