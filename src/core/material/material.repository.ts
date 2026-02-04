@@ -148,7 +148,9 @@ export class MaterialRepository {
         const db = connection || this.informix
 
         const transactionDate = new Date();
-        const dateString = transactionDate.toISOString().slice(0, 10);
+        const dateString = transactionDate.toLocaleDateString('en-CA', {
+            timeZone: 'America/Sao_Paulo'
+        });
 
         await db.query(`
             INSERT INTO ESTOQUE_LOC_RESER (
