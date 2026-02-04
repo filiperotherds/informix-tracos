@@ -866,29 +866,4 @@ export class MaterialRepository {
             ]
         )
     }
-
-    async updateQtdReservadaEstoque({
-        qtdReserva,
-        cod_empresa,
-        cod_item
-    }: {
-        qtdReserva: number,
-        cod_empresa: string,
-        cod_item: string
-    }, connection?: any) {
-        const db = connection || this.informix
-
-        await db.query(`
-            UPDATE 
-                estoque
-            SET
-                qtd_reservada = ?
-            WHERE
-                cod_empresa = ?
-                AND cod_item = ?`,
-            [
-
-            ]
-        )
-    }
 }

@@ -246,35 +246,42 @@ export class MaterialService {
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
 
+            console.log("Balance: ", balance)
+
             const reservedMaterial = await this.materialRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, connection)
 
-            const newReservedMaterial = reservedMaterial - old_value + new_value
+            console.log("Reserved Material: ", reservedMaterial)
+
+            const newReservedMaterial = reservedMaterial - old_value + Number(new_value)
+
+            console.log("New Reserved Material: ", newReservedMaterial)
 
             const availableBalance = balance - newReservedMaterial
 
-            if (availableBalance < new_value) {
+            console.log("Available Balance: ", availableBalance)
+
+            if (availableBalance < 0) {
                 throw new ConflictException('Insufficient material balance.')
             }
 
             await this.materialRepository.updateEstoqueLocReser({
-                qtdReserva: new_value,
+                qtdReserva: Number(new_value),
                 logixId
             }, connection)
 
             await this.materialRepository.updateSupParResvEst({
-                qtdReserva: new_value,
+                qtdReserva: Number(new_value),
                 logixId
             }, connection)
 
-            await this.materialRepository.updateQtdReservadaEstoque({
-                qtdReserva: newReservedMaterial,
+            await this.materialRepository.updateEstoqueQtdReservada({
+                qtd_reserva: newReservedMaterial,
                 cod_empresa,
                 cod_item
             }, connection)
-
         })
     }
 
