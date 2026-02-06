@@ -7,7 +7,7 @@ import {
     type CancelMaterialReserveBodySchema,
     cancelMaterialReserveBodySchema
 } from "../schemas/body/cancel-material-reserve.scham";
-import { MaterialReserveDto } from "../material-reserve.dto";
+import { CancelMaterialReserveDto } from "../material-reserve.dto";
 
 @ApiTags('Material')
 @Controller('/material')
@@ -17,7 +17,7 @@ export class CancelMaterialReserveController {
 
     @Patch('/cancel-reserve')
     @ApiBody({
-        type: MaterialReserveDto,
+        type: CancelMaterialReserveDto,
         description: 'Cancel an material reserve',
     })
     @UsePipes(new ZodValidationPipe(cancelMaterialReserveBodySchema))
