@@ -202,7 +202,7 @@ export class MaterialService {
         await this.informixService.transaction(async (connection) => {
             const logixId = await this.materialRepository.getLogixId(tracos_id)
 
-            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId })
+            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId }, connection)
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
 

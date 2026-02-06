@@ -5,6 +5,7 @@ export const getAllMaterialSchema = z.array(
         cod_logix: z.coerce.string(),
         preco_unit: z.number(),
         saldo_estoque: z.number(),
+        estoque: z.string()
     })
 );
 
