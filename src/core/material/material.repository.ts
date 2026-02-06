@@ -23,6 +23,7 @@ import { GetEstoqueLoteEnderSchema } from "./schemas/get-estoque-lote-ender.sche
 import { UpdateEstoqueLoteEnder } from "./schemas/update-estoque-lote-ender.schema";
 import { UpdateEstoqueLote } from "./schemas/update-estoque-lote.schema";
 import { DeleteDeParaSchema } from "./schemas/de-para/delete-de-para.schema";
+import { DeleteMaterialReserveSchema } from "./schemas/delete-material-reserve.schema";
 
 const materialBalanceSchema = z.coerce.number()
 
@@ -803,21 +804,16 @@ export class MaterialRepository {
     }, connection?: any) {
         const db = connection || this.informix
 
-        const result = await db.query(`
+        const response = await db.query(`
             SELECT
-                cod_empresa,
-                cod_item,
-                qtd_reservada AS old_value
+                cod_empresa, cod_item, qtd_reservada as old_value, num_docum as num_os
             FROM
-                ESTOQUE_LOC_RESER
+                estoque_loc_reser
             WHERE
-                num_reserva = ?`,
-            [
-                logixId
-            ]
-        )
+                num_reserva = ?
+        `, [logixId])
 
-        return result[0]
+        return response[0]
     }
 
     async updateEstoqueLocReser({
@@ -830,17 +826,14 @@ export class MaterialRepository {
         const db = connection || this.informix
 
         await db.query(`
-                UPDATE
-                    ESTOQUE_LOC_RESER 
-                SET
-                    qtd_reservada = ?
-                WHERE
-                    num_reserva = ?`,
-            [
-                qtdReserva,
-                logixId
-            ]
-        )
+            UPDATE
+                estoque_loc_reser
+            SET
+                qtd_reservada = ?,
+                qtd_atendida = 0
+            WHERE
+                num_reserva = ?
+        `, [qtdReserva, logixId])
     }
 
     async updateSupParResvEst({
@@ -854,15 +847,81 @@ export class MaterialRepository {
 
         await db.query(`
             UPDATE
-                SUP_PAR_RESV_EST
+                sup_par_resv_est
             SET
                 parametro_val = ?
             WHERE
-                parametro = "qtd_resv_origem"
-                AND reserva = ?`,
+                reserva = ?
+                AND parametro = 'qtd_resv_origem'
+        `, [qtdReserva, logixId])
+    }
+
+    // DELETE OPERATIONS
+
+    async deleteSupParResvEst({
+        cod_empresa,
+        num_reserva
+    }: DeleteMaterialReserveSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            DELETE FROM sup_par_resv_est 
+            WHERE empresa = ? 
+            AND reserva = ?`,
             [
-                qtdReserva,
-                logixId
+                cod_empresa,
+                num_reserva
+            ]
+        )
+    }
+
+    async deleteEstoqLocResObs({
+        cod_empresa,
+        num_reserva
+    }: DeleteMaterialReserveSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            DELETE FROM estoq_loc_res_obs 
+            WHERE cod_empresa = ? 
+            AND num_reserva = ?`,
+            [
+                cod_empresa,
+                num_reserva
+            ]
+        )
+    }
+
+    async deleteEstReserAreaLin({
+        cod_empresa,
+        num_reserva
+    }: DeleteMaterialReserveSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            DELETE FROM est_reser_area_lin 
+            WHERE cod_empresa = ? 
+            AND num_reserva = ?`,
+            [
+                cod_empresa,
+                num_reserva
+            ]
+        )
+    }
+
+    async deleteEstoqueLocReser({
+        cod_empresa,
+        num_reserva
+    }: DeleteMaterialReserveSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            DELETE FROM estoque_loc_reser 
+            WHERE cod_empresa = ? 
+            AND num_reserva = ?`,
+            [
+                cod_empresa,
+                num_reserva
             ]
         )
     }

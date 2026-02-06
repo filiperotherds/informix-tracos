@@ -5,6 +5,7 @@ import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve.schema";
 import { InformixService } from "@/informix/informix.service";
 import { UpdateMaterialReserveBodySchema } from "./schemas/body/update-material-reserve.schema";
+import { CancelMaterialReserveBodySchema } from "./schemas/body/cancel-material-reserve.scham";
 
 @Injectable()
 export class MaterialService {
@@ -136,90 +137,31 @@ export class MaterialService {
     }
 
     async cancelReserve({
-        cod_item,
-        num_os,
-        qtd_reserva,
         tracos_id
-    }: MaterialReserveBodySchema, connection?: any) {
+    }: CancelMaterialReserveBodySchema, connection?: any) {
         const execute = async (conn: any) => {
-            const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os, conn)
+            const logixId = await this.materialRepository.getLogixId(tracos_id)
 
-            const cod_centro_custo = await this.equipmentRepository.getEquipmentCostCenter({
+            const { cod_empresa } = await this.materialRepository.getEstoqueLocReserData({ logixId }, conn)
+
+            await this.materialRepository.deleteSupParResvEst({
                 cod_empresa,
-                cod_uni_funcio
+                num_reserva: logixId
             }, conn)
 
-            const cod_tip_despesa = await this.materialRepository.getExpenseType({
+            await this.materialRepository.deleteEstoqLocResObs({
                 cod_empresa,
-                cod_item
+                num_reserva: logixId
             }, conn)
 
-            const num_conta_deb = formattedDebitAccount({
-                cod_centro_custo: cod_centro_custo,
-                cod_tip_despesa: cod_tip_despesa,
-            })
-
-            const num_transac = await this.materialRepository.getNumTransac(tracos_id)
-
-            const estoque_trans = await this.materialRepository.getEstoqueTrans({
+            await this.materialRepository.deleteEstReserAreaLin({
                 cod_empresa,
-                cod_item,
-                num_transac,
+                num_reserva: logixId
             }, conn)
 
-            if (!estoque_trans) {
-                throw new ConflictException("Doesn't found registers at ESTOQUE_TRANS.")
-            }
-
-            const new_num_transac = await this.materialRepository.createEstoqueTrans({
+            await this.materialRepository.deleteEstoqueLocReser({
                 cod_empresa,
-                cod_item,
-                num_conta: num_conta_deb,
-                num_docum: estoque_trans.num_docum,
-                num_secao_requis: estoque_trans.num_secao_requis,
-                qtd_movto: estoque_trans.qtd_movto
-            }, conn)
-
-            await this.materialRepository.createEstoqueTransEnd({
-                cod_empresa,
-                cod_item,
-                num_transac: new_num_transac,
-                qtd_movto: estoque_trans.qtd_movto
-            }, conn)
-
-            await this.materialRepository.createEstoqueTransRev({
-                cod_empresa,
-                num_transac,
-                new_num_transac
-            }, conn)
-
-            const estoqueLoteEnder = await this.materialRepository.getEstoqueLoteEnder({
-                cod_empresa,
-                cod_item
-            }, conn)
-
-            console.log("Estoque Lote Ender: ", estoqueLoteEnder)
-
-            const saldo_reversao = Number(estoqueLoteEnder.qtd_saldo) + Number(estoque_trans.qtd_movto)
-
-            console.log("Saldo Reversão: ", saldo_reversao)
-
-            await this.materialRepository.updateEstoqueLoteEnder({
-                cod_empresa,
-                qtd_saldo: saldo_reversao,
-                num_transac: estoqueLoteEnder.num_transac
-            }, conn)
-
-            await this.materialRepository.updateEstoqueLote({
-                qtd_reversao: estoque_trans.qtd_movto,
-                cod_empresa,
-                cod_item
-            }, conn)
-
-            await this.materialRepository.updateEstoqueQtdLiberada({
-                cod_empresa,
-                cod_item,
-                qtd_liberada: saldo_reversao
+                num_reserva: logixId
             }, conn)
 
             await this.materialRepository.cancelDeParaId({
@@ -246,22 +188,14 @@ export class MaterialService {
 
             const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
 
-            console.log("Balance: ", balance)
-
             const reservedMaterial = await this.materialRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, connection)
 
-            console.log("Reserved Material: ", reservedMaterial)
-
             const newReservedMaterial = reservedMaterial - old_value + Number(new_value)
 
-            console.log("New Reserved Material: ", newReservedMaterial)
-
             const availableBalance = balance - newReservedMaterial
-
-            console.log("Available Balance: ", availableBalance)
 
             if (availableBalance < 0) {
                 throw new ConflictException('Insufficient material balance.')

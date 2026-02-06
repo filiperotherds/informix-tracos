@@ -4,9 +4,9 @@ import { ZodValidationPipe } from "@/common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import {
-    type MaterialReserveBodySchema,
-    materialReserveBodySchema
-} from "../schemas/body/material-reserve.schema";
+    type CancelMaterialReserveBodySchema,
+    cancelMaterialReserveBodySchema
+} from "../schemas/body/cancel-material-reserve.scham";
 import { MaterialReserveDto } from "../material-reserve.dto";
 
 @ApiTags('Material')
@@ -20,18 +20,12 @@ export class CancelMaterialReserveController {
         type: MaterialReserveDto,
         description: 'Cancel an material reserve',
     })
-    @UsePipes(new ZodValidationPipe(materialReserveBodySchema))
+    @UsePipes(new ZodValidationPipe(cancelMaterialReserveBodySchema))
     async handle(@Body() {
-        cod_item,
-        num_os,
-        qtd_reserva,
         tracos_id
-    }: MaterialReserveBodySchema) {
+    }: CancelMaterialReserveBodySchema) {
         await this.materialService.cancelReserve({
-            cod_item: cod_item,
-            num_os: num_os,
-            qtd_reserva: qtd_reserva,
-            tracos_id: tracos_id
+            tracos_id: tracos_id,
         })
     }
 }
