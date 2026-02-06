@@ -142,7 +142,20 @@ export class MaterialService {
         const execute = async (conn: any) => {
             const logixId = await this.materialRepository.getLogixId(tracos_id)
 
-            const { cod_empresa } = await this.materialRepository.getEstoqueLocReserData({ logixId }, conn)
+            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId }, conn)
+
+            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+                cod_empresa,
+                cod_item
+            }, conn)
+
+            const new_qtd_reservada = reservedMaterial - Number(old_value)
+
+            await this.materialRepository.updateEstoqueQtdReservada({
+                cod_empresa,
+                cod_item,
+                qtd_reserva: new_qtd_reservada
+            }, conn)
 
             await this.materialRepository.deleteSupParResvEst({
                 cod_empresa,
@@ -150,6 +163,11 @@ export class MaterialService {
             }, conn)
 
             await this.materialRepository.deleteEstoqLocResObs({
+                cod_empresa,
+                num_reserva: logixId
+            }, conn)
+
+            await this.materialRepository.deleteEstLocReserEnd({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)

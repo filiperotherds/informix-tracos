@@ -52,7 +52,6 @@ export class MaterialRepository {
         await this.prisma.deParaReserva.updateMany({
             where: {
                 tracosId,
-                status: "EFETIVADA"
             },
             data: {
                 status: "CANCELADA"
@@ -917,6 +916,23 @@ export class MaterialRepository {
 
         await db.query(`
             DELETE FROM estoque_loc_reser 
+            WHERE cod_empresa = ? 
+            AND num_reserva = ?`,
+            [
+                cod_empresa,
+                num_reserva
+            ]
+        )
+    }
+
+    async deleteEstLocReserEnd({
+        cod_empresa,
+        num_reserva
+    }: DeleteMaterialReserveSchema, connection?: any) {
+        const db = connection || this.informix
+
+        await db.query(`
+            DELETE FROM est_loc_reser_end 
             WHERE cod_empresa = ? 
             AND num_reserva = ?`,
             [
