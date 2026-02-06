@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Delete, UseGuards, UsePipes } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "@/common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
@@ -15,7 +15,7 @@ import { CancelMaterialReserveDto } from "../material-reserve.dto";
 export class CancelMaterialReserveController {
     constructor(private materialService: MaterialService) { }
 
-    @Patch('/cancel-reserve')
+    @Delete('/reserve')
     @ApiBody({
         type: CancelMaterialReserveDto,
         description: 'Cancel an material reserve',
