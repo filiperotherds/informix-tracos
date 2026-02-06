@@ -345,10 +345,10 @@ export class MaterialRepository {
                     AND    el.cod_empresa   = it.cod_empresa
                     AND    el.cod_item      = it.cod_item
                 ) as saldo_estoque,
-                item_sup.pre_unit_ult_compr as preco_unit,
-                cod_empresa as estoque
+                item_sup.pre_unit_ult_compr as preco_unit
             FROM item, familia, estoque, OUTER ordem_sup, OUTER item_sup
-            WHERE item.ies_ctr_estoque = "S" 
+            WHERE item.cod_empresa = "01"
+            AND   item.ies_ctr_estoque = "S" 
             AND   item.ies_situacao    = "A" 
             AND   item.gru_ctr_estoq   = 65 
             AND   familia.cod_familia  = item.cod_familia 
@@ -360,7 +360,7 @@ export class MaterialRepository {
             AND   ordem_sup.cod_empresa= item.cod_empresa
             AND   item_sup.cod_empresa = item.cod_empresa
             AND   item_sup.cod_item    = item.cod_item
-            GROUP BY 1,2,3,4
+            GROUP BY 1,2,3
         `);
 
         const materialBalance = getAllMaterialSchema.parse(response)
