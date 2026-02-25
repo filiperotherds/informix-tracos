@@ -2,11 +2,12 @@ import 'dotenv/config'
 import { z } from 'zod';
 
 export const envSchema = z.object({
-  DATABASE_URL: z.string(),
+  DB_TRACOS_URL: z.string(),
   INFORMIX_STRING: z.string(),
   JWT_PRIVATE_KEY: z.string(),
   JWT_PUBLIC_KEY: z.string(),
   PORT: z.coerce.number().optional().default(3333),
+  TRACKIAN_API_URL: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

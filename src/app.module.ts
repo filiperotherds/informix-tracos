@@ -10,6 +10,7 @@ import { AuthenticateController } from './auth/controllers/authenticate.controll
 import { MaterialModule } from './core/material/material.module';
 import { EquipmentModule } from './core/equipment/equipment.module';
 import { ServiceOrderModule } from './core/service-order/service-order.module';
+import { JobsModule } from './jobs/jobs.module';
 
 /* VÓS QUE ENTRAIS, ABANDONAI TODA A ESPERANÇA */
 
@@ -24,11 +25,15 @@ import { ServiceOrderModule } from './core/service-order/service-order.module';
     MaterialModule,
     EquipmentModule,
     ServiceOrderModule,
+    JobsModule,
   ],
   controllers: [
     CreateAccountController,
     AuthenticateController,
   ],
-  providers: [PrismaService, InformixService],
+  providers: [
+    PrismaService,
+    InformixService,
+  ],
 })
 export class AppModule { }

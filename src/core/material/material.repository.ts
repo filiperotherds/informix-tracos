@@ -39,7 +39,7 @@ export class MaterialRepository {
     /* ===== Operações De/Para ===== */
 
     async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
-        await this.prisma.deParaReserva.create({
+        await this.prisma.xrefReservation.create({
             data: {
                 logixId,
                 tracosId,
@@ -49,7 +49,7 @@ export class MaterialRepository {
     }
 
     async cancelDeParaId({ tracosId }: DeleteDeParaSchema) {
-        await this.prisma.deParaReserva.updateMany({
+        await this.prisma.xrefReservation.updateMany({
             where: {
                 tracosId,
             },
@@ -60,7 +60,7 @@ export class MaterialRepository {
     }
 
     async getPendingRequests() {
-        const pendingRequests = await this.prisma.deParaReserva.findMany({
+        const pendingRequests = await this.prisma.xrefReservation.findMany({
             where: {
                 status: "PENDENTE"
             }
@@ -70,7 +70,7 @@ export class MaterialRepository {
     }
 
     async getLogixId(tracosId: string) {
-        const result = await this.prisma.deParaReserva.findFirst({
+        const result = await this.prisma.xrefReservation.findFirst({
             where: {
                 tracosId
             },
@@ -369,7 +369,7 @@ export class MaterialRepository {
     }
 
     async getNumTransac(tracos_id: string) {
-        const response = await this.prisma.deParaReserva.findFirst({
+        const response = await this.prisma.xrefReservation.findFirst({
             select: {
                 logixId: true,
             },

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlserver"
-  url      = env("DATABASE_URL")
+  url      = env("DB_TRACOS_URL")
 }
 
 model User {
@@ -17,12 +17,34 @@ model User {
   @@map("user")
 }
 
-model DeParaReserva {
-  tracosId String  @map("tracos_id")
-  logixId  String  @map("logix_id")
+model XrefReservation {
+  id       Int     @id @default(autoincrement())
+  tracosId String  @unique @map("tracos_id")
+  logixId  String  @unique @map("logix_id")
   status   String? @db.VarChar(20)
 
-  @@id([tracosId, logixId])
   @@index([tracosId])
-  @@map("de_para_reserva")
+  @@index([logixId])
+  @@map("xref_reservation")
+}
+
+model XrefItem {
+  id       Int     @id @default(autoincrement())
+  tracosId String  @unique @map("tracos_id")
+  logixId  String  @unique @map("logix_id")
+  disabled Boolean
+
+  @@index([tracosId])
+  @@index([logixId])
+  @@map("xref_item")
+}
+
+model TracosToken {
+  id          Int      @id @default(autoincrement())
+  token       String
+  companyId   String   @unique @map("company_id") @db.VarChar(255)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  environment String?  @unique @db.VarChar(3)
+
+  @@map("tracos_token")
 }
