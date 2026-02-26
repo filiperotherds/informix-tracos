@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MaterialRepository } from '@/core/material/material.repository';
+import { MaterialModule } from '@/core/material/material.module';
 import { XrefReservationSyncWorker } from './xref-reservation-sync.worker';
 import { XrefItemSyncWorker } from './xref-item-sync.worker';
 
 @Module({
+    imports: [
+        MaterialModule,
+    ],
     providers: [
-        MaterialRepository,
         XrefReservationSyncWorker,
         XrefItemSyncWorker,
     ],

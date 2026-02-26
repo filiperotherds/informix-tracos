@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InformixService } from '../informix/informix.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { MaterialRepository } from '@/core/material/material.repository';
+import { ReservationRepository } from '@/core/material/repositories/reservation.repository';
 import { TractianApiService } from '@/tractian-api/tractian-api.service';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class XrefReservationSyncWorker {
     constructor(
         private readonly informix: InformixService,
         private readonly prisma: PrismaService,
-        private readonly materialRepository: MaterialRepository,
+        private readonly reservationRepository: ReservationRepository,
         private readonly tractianApi: TractianApiService,
     ) { }
 
@@ -67,7 +67,7 @@ export class XrefReservationSyncWorker {
                             const reserveData = await this.informix.transaction<any>(async (connection) => {
                                 await connection.query('SET ISOLATION DIRTY READ;')
 
-                                const data = await this.materialRepository.getEstoqueLocReserData({
+                                const data = await this.reservationRepository.getEstoqueLocReserData({
                                     logixId: Number(req.logixId)
                                 }, connection)
 

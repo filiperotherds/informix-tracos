@@ -1,5 +1,7 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import { MaterialRepository } from "./material.repository";
+import { XrefRepository } from "./repositories/xref.repository";
+import { StockRepository } from "./repositories/stock.repository";
+import { ReservationRepository } from "./repositories/reservation.repository";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve.schema";
@@ -10,9 +12,11 @@ import { CancelMaterialReserveBodySchema } from "./schemas/body/cancel-material-
 @Injectable()
 export class MaterialService {
     constructor(
-        private materialRepository: MaterialRepository,
-        private equipmentRepository: EquipmentRepository,
-        private informixService: InformixService
+        private readonly xrefRepository: XrefRepository,
+        private readonly stockRepository: StockRepository,
+        private readonly reservationRepository: ReservationRepository,
+        private readonly equipmentRepository: EquipmentRepository,
+        private readonly informixService: InformixService,
     ) { }
 
     async createReserve({
@@ -24,9 +28,9 @@ export class MaterialService {
         const execute = async (conn: any) => {
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
-            const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, conn)
+            const balance = await this.stockRepository.getMaterialBalance({ cod_empresa, cod_item }, conn)
 
-            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+            const reservedMaterial = await this.stockRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, conn)
@@ -48,7 +52,7 @@ export class MaterialService {
                 throw new ConflictException('Cost center not found.')
             }
 
-            const cod_tip_despesa = await this.materialRepository.getExpenseType({
+            const cod_tip_despesa = await this.stockRepository.getExpenseType({
                 cod_empresa,
                 cod_item
             }, conn)
@@ -58,7 +62,7 @@ export class MaterialService {
                 cod_tip_despesa,
             })
 
-            const requisitionId = await this.materialRepository.createEstoqueLocReser({
+            const requisitionId = await this.reservationRepository.createEstoqueLocReser({
                 cod_empresa,
                 cod_equip,
                 cod_item,
@@ -68,12 +72,12 @@ export class MaterialService {
                 qtd_reserva,
             }, conn)
 
-            await this.materialRepository.createEstLocReserEnd({
+            await this.reservationRepository.createEstLocReserEnd({
                 cod_empresa: cod_empresa,
                 id: requisitionId
             }, conn)
 
-            await this.materialRepository.createSupParResvEst({
+            await this.reservationRepository.createSupParResvEst({
                 cod_empresa,
                 requisitionId,
                 parametro: 'sit_est_reservada',
@@ -84,7 +88,7 @@ export class MaterialService {
                 parametro_num: null
             }, conn)
 
-            await this.materialRepository.createSupParResvEst({
+            await this.reservationRepository.createSupParResvEst({
                 cod_empresa,
                 requisitionId,
                 parametro: 'ordem_servico',
@@ -95,7 +99,7 @@ export class MaterialService {
                 parametro_num: null
             }, conn)
 
-            await this.materialRepository.createSupParResvEst({
+            await this.reservationRepository.createSupParResvEst({
                 cod_empresa,
                 requisitionId,
                 parametro: 'qtd_resv_origem',
@@ -106,7 +110,7 @@ export class MaterialService {
                 parametro_num: null
             }, conn)
 
-            await this.materialRepository.createSupParResvEst({
+            await this.reservationRepository.createSupParResvEst({
                 cod_empresa,
                 requisitionId,
                 parametro: 'tipo_despesa_item',
@@ -117,13 +121,13 @@ export class MaterialService {
                 parametro_num: null
             }, conn)
 
-            await this.materialRepository.updateEstoqueQtdReservada({
+            await this.stockRepository.updateEstoqueQtdReservada({
                 cod_empresa,
                 cod_item,
                 qtd_reserva: new_qtd_reservada
             }, conn)
 
-            await this.materialRepository.createDeParaId({
+            await this.xrefRepository.createDeParaId({
                 logixId: requisitionId.toString(),
                 tracosId: tracos_id
             })
@@ -140,49 +144,49 @@ export class MaterialService {
         tracos_id
     }: CancelMaterialReserveBodySchema, connection?: any) {
         const execute = async (conn: any) => {
-            const logixId = await this.materialRepository.getLogixId(tracos_id)
+            const logixId = await this.xrefRepository.getLogixId(tracos_id)
 
-            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId }, conn)
+            const { cod_empresa, cod_item, old_value } = await this.reservationRepository.getEstoqueLocReserData({ logixId }, conn)
 
-            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+            const reservedMaterial = await this.stockRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, conn)
 
             const new_qtd_reservada = reservedMaterial - Number(old_value)
 
-            await this.materialRepository.updateEstoqueQtdReservada({
+            await this.stockRepository.updateEstoqueQtdReservada({
                 cod_empresa,
                 cod_item,
                 qtd_reserva: new_qtd_reservada
             }, conn)
 
-            await this.materialRepository.deleteSupParResvEst({
+            await this.reservationRepository.deleteSupParResvEst({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)
 
-            await this.materialRepository.deleteEstoqLocResObs({
+            await this.reservationRepository.deleteEstoqLocResObs({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)
 
-            await this.materialRepository.deleteEstLocReserEnd({
+            await this.reservationRepository.deleteEstLocReserEnd({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)
 
-            await this.materialRepository.deleteEstReserAreaLin({
+            await this.reservationRepository.deleteEstReserAreaLin({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)
 
-            await this.materialRepository.deleteEstoqueLocReser({
+            await this.reservationRepository.deleteEstoqueLocReser({
                 cod_empresa,
                 num_reserva: logixId
             }, conn)
 
-            await this.materialRepository.cancelDeParaId({
+            await this.xrefRepository.cancelDeParaId({
                 tracosId: tracos_id
             })
         }
@@ -200,13 +204,13 @@ export class MaterialService {
     }: UpdateMaterialReserveBodySchema) {
 
         await this.informixService.transaction(async (connection) => {
-            const logixId = await this.materialRepository.getLogixId(tracos_id)
+            const logixId = await this.xrefRepository.getLogixId(tracos_id)
 
-            const { cod_empresa, cod_item, old_value } = await this.materialRepository.getEstoqueLocReserData({ logixId }, connection)
+            const { cod_empresa, cod_item, old_value } = await this.reservationRepository.getEstoqueLocReserData({ logixId }, connection)
 
-            const balance = await this.materialRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
+            const balance = await this.stockRepository.getMaterialBalance({ cod_empresa, cod_item }, connection)
 
-            const reservedMaterial = await this.materialRepository.getReservedMaterial({
+            const reservedMaterial = await this.stockRepository.getReservedMaterial({
                 cod_empresa,
                 cod_item
             }, connection)
@@ -219,17 +223,17 @@ export class MaterialService {
                 throw new ConflictException('Insufficient material balance.')
             }
 
-            await this.materialRepository.updateEstoqueLocReser({
+            await this.reservationRepository.updateEstoqueLocReser({
                 qtdReserva: Number(new_value),
                 logixId
             }, connection)
 
-            await this.materialRepository.updateSupParResvEst({
+            await this.reservationRepository.updateSupParResvEst({
                 qtdReserva: Number(new_value),
                 logixId
             }, connection)
 
-            await this.materialRepository.updateEstoqueQtdReservada({
+            await this.stockRepository.updateEstoqueQtdReservada({
                 qtd_reserva: newReservedMaterial,
                 cod_empresa,
                 cod_item
@@ -238,7 +242,7 @@ export class MaterialService {
     }
 
     async getAllMaterialBalance() {
-        const balance = await this.materialRepository.getAllMaterialBalance()
+        const balance = await this.stockRepository.getAllMaterialBalance()
 
         return balance
     }
