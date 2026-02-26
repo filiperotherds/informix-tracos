@@ -46,32 +46,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# -----------------------------------------------------------
-# IBM Informix ODBC Driver Installation
-# -----------------------------------------------------------
-# Option A (recommended): Embed the driver in the image.
-#
-# 1. Download the Informix Client SDK from IBM's website
-# 2. Place the .tar.gz file at: docker/informix-csdk.tar.gz
-# 3. Uncomment the lines below:
-#
-# COPY docker/informix-csdk.tar.gz /tmp/informix-csdk.tar.gz
-# RUN mkdir -p /opt/informix && \
-#     tar -xzf /tmp/informix-csdk.tar.gz -C /opt/informix && \
-#     rm /tmp/informix-csdk.tar.gz
-#
-# ENV INFORMIXDIR=/opt/informix
-# ENV LD_LIBRARY_PATH=$INFORMIXDIR/lib:$INFORMIXDIR/lib/esql:$LD_LIBRARY_PATH
-# ENV PATH=$INFORMIXDIR/bin:$PATH
-#
-# RUN echo "[Informix]" > /etc/odbcinst.ini && \
-#     echo "Description = IBM Informix ODBC Driver" >> /etc/odbcinst.ini && \
-#     echo "Driver = /opt/informix/lib/cli/iclis09b.so" >> /etc/odbcinst.ini
-# -----------------------------------------------------------
-#
-# Option B: Mount the driver from the host via docker-compose.
-# See the volumes section in docker-compose.yml for details.
-# -----------------------------------------------------------
+COPY docker/informix-csdk.tar.gz /tmp/informix-csdk.tar.gz
+RUN mkdir -p /opt/informix && \
+    tar -xzf /tmp/informix-csdk.tar.gz -C /opt/informix && \
+    rm /tmp/informix-csdk.tar.gz
+
+ENV INFORMIXDIR=/opt/informix
+ENV LD_LIBRARY_PATH=$INFORMIXDIR/lib:$INFORMIXDIR/lib/esql:$LD_LIBRARY_PATH
+ENV PATH=$INFORMIXDIR/bin:$PATH
+
+RUN echo "[Informix]" > /etc/odbcinst.ini && \
+    echo "Description = IBM Informix ODBC Driver" >> /etc/odbcinst.ini && \
+    echo "Driver = /opt/informix/lib/cli/iclis09b.so" >> /etc/odbcinst.ini
 
 WORKDIR /app
 

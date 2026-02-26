@@ -20,19 +20,6 @@ services:
       retries: 3
       start_period: 15s
 
-    # -------------------------------------------------------
-    # Option B (Informix ODBC via host volume mount):
-    # If using the host's Informix driver instead of embedding
-    # it in the image, uncomment the volumes below and adjust
-    # the paths to match your server's driver location.
-    # -------------------------------------------------------
-    # volumes:
-    #   - /opt/informix:/opt/informix:ro
-    #   - /etc/odbcinst.ini:/etc/odbcinst.ini:ro
-    # environment:
-    #   - INFORMIXDIR=/opt/informix
-    #   - LD_LIBRARY_PATH=/opt/informix/lib:/opt/informix/lib/esql
-
     networks:
       - tracos-network
 
