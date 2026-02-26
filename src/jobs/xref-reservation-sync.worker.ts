@@ -33,7 +33,7 @@ export class XrefReservationSyncWorker {
                 return
             }
 
-            this.logger.log(pendingRequests)
+            this.logger.log(`Found ${pendingRequests.length} pending reservation(s) to sync`);
 
             for (const req of pendingRequests) {
                 try {
@@ -50,7 +50,7 @@ export class XrefReservationSyncWorker {
                         return null;
                     })
 
-                    this.logger.log(reqStatus)
+                    this.logger.debug(`Reservation ${req.logixId} status: ${reqStatus}`);
 
                     if (reqStatus) {
                         if (reqStatus === 'L') {
@@ -95,7 +95,7 @@ export class XrefReservationSyncWorker {
                                 id: xrefItemResponse.tracosId
                             })
 
-                            // Lógica para obter os itens dos Batches e o Storage Position
+                            // Resolve batch items and storage position for withdrawal
 
                             const withdrawnPositions = [
                                 {
@@ -106,7 +106,7 @@ export class XrefReservationSyncWorker {
                                 }
                             ]
 
-                            let remainingQtd = reserveData.old_value
+                            let remainingQuantity = reserveData.old_value
 
                             let withdrawnBatches: any[] = []
 
@@ -117,12 +117,12 @@ export class XrefReservationSyncWorker {
                             });
 
                             batches.forEach((batch) => {
-                                if (remainingQtd <= 0) {
+                                if (remainingQuantity <= 0) {
                                     return;
                                 }
 
                                 const storageInfo = itemStorageResponse.data[0];
-                                const amountToWithdraw = Math.min(batch.quantity, remainingQtd);
+                                const amountToWithdraw = Math.min(batch.quantity, remainingQuantity);
 
                                 withdrawnBatches.push({
                                     itemReservationId: req.tracosId,
@@ -131,7 +131,7 @@ export class XrefReservationSyncWorker {
                                     quantity: amountToWithdraw,
                                 });
 
-                                remainingQtd -= amountToWithdraw;
+                                remainingQuantity -= amountToWithdraw;
                             });
 
                             const withdrawResult = await this.tractianApi.withdrawItemReservation({
@@ -140,16 +140,16 @@ export class XrefReservationSyncWorker {
                                 withdrawnBatches
                             })
 
-                            this.logger.log(withdrawResult)
+                            this.logger.log(`Withdrawal completed for reservation ${req.tracosId}`);
 
                         }
                     }
                 } catch (err) {
-                    this.logger.log(err)
+                    this.logger.error(`Failed to process reservation ${req.logixId}`, err);
                 }
             }
         } catch (error) {
-            this.logger.error(`Falha na consulta ao Informix: ${error}`);
+            this.logger.error(`Failed to query Informix: ${error}`);
         }
     }
 }

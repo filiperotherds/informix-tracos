@@ -14,10 +14,10 @@ export class XrefItemSyncWorker {
 
     @Cron(CronExpression.EVERY_DAY_AT_4AM)
     async handleXrefItemSync() {
-        this.logger.log('XrefItemSyncWorker executed')
+        this.logger.log('Starting item cross-reference sync');
 
-        let page = 1
-        let hasNextPage = true
+        let page = 1;
+        let hasNextPage = true;
 
         const tokenResponse = await this.prisma.tracosToken.findFirst({
             select: {
@@ -26,28 +26,28 @@ export class XrefItemSyncWorker {
             where: {
                 environment: 'HML'
             }
-        })
+        });
 
         if (!tokenResponse) {
-            this.logger.error('Nenhuma empresa encontrada')
-            return
+            this.logger.error('No company found for item sync');
+            return;
         }
 
-        const { companyId } = tokenResponse
+        const { companyId } = tokenResponse;
 
         while (hasNextPage) {
             const inventory = await this.tractianApi.getInventoryByCompanyId({
                 id: companyId,
                 limit: 100,
                 page
-            })
+            });
 
             for (const item of inventory.data) {
                 const xrefItem = await this.prisma.xrefItem.findUnique({
                     where: {
                         tracosId: item.id
                     }
-                })
+                });
 
                 if (!xrefItem) {
                     await this.prisma.xrefItem.create({
@@ -56,7 +56,7 @@ export class XrefItemSyncWorker {
                             logixId: item.code.value,
                             disabled: item.disabled.value
                         }
-                    })
+                    });
                 }
 
                 if (xrefItem?.disabled !== item.disabled.value) {
@@ -67,13 +67,16 @@ export class XrefItemSyncWorker {
                         where: {
                             tracosId: item.id
                         }
-                    })
+                    });
                 }
             }
 
-            hasNextPage = inventory.hasNextPage
+            hasNextPage = inventory.hasNextPage;
 
-            page++
+            page++;
         }
+
+        this.logger.log('Item cross-reference sync completed');
     }
 }
+

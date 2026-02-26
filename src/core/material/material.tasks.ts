@@ -10,12 +10,12 @@ export class MaterialTasksService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async handleCron() {
-        this.logger.debug('Executando task agendada do Service Order...');
+        this.logger.debug('Running scheduled material task...');
 
         try {
 
         } catch (error) {
-            this.logger.error('Erro ao executar task agendada', error);
+            this.logger.error('Failed to execute scheduled material task', error);
         }
     }
 }

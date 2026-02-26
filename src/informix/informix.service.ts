@@ -20,8 +20,8 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
     this.pingInterval = setInterval(async () => {
       try {
         await this.pool.query('SELECT 1 FROM sysmaster:sysdual')
-        
-        console.log(`[${new Date().toISOString()}] KEEP ALIVE EXECUTED`)
+
+        this.logger.debug('Heartbeat ping executed successfully');
       } catch (err) {
         this.logger.warn('Heartbeat ping failed - connections might be refreshing', err);
       }

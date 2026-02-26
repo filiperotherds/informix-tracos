@@ -1,5 +1,5 @@
 import z from "zod";
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, Logger } from "@nestjs/common";
 import { InformixService } from "../../informix/informix.service";
 
 import {
@@ -36,7 +36,9 @@ export class MaterialRepository {
         private prisma: PrismaService
     ) { }
 
-    /* ===== Operações De/Para ===== */
+    private readonly logger = new Logger(MaterialRepository.name);
+
+    /* ===== Cross-reference (De/Para) operations ===== */
 
     async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
         await this.prisma.xrefReservation.create({
@@ -86,7 +88,7 @@ export class MaterialRepository {
         return Number(result.logixId)
     }
 
-    /* ===== Operações De/Para ===== */
+    /* ===== Cross-reference (De/Para) operations ===== */
 
     async getMaterialBalance({
         cod_item, cod_empresa
@@ -647,7 +649,7 @@ export class MaterialRepository {
                 NUM_TRANSAC,
                 TEX_OBSERV
             ) VALUES 
-                (?, ?, 'Operação realizada via TracOs.')`,
+                (?, ?, 'Operation performed via TracOs.')`,
             [
                 cod_empresa,
                 num_transac
@@ -770,7 +772,7 @@ export class MaterialRepository {
             ]
         )
 
-        console.log("Estoque Qtd Liberada Atualizado")
+        this.logger.debug(`Stock released quantity updated for item ${cod_item}`);
     }
 
     async getReservedMaterial({ cod_item, cod_empresa }: { cod_item: string, cod_empresa: string }, connection?: any) {
@@ -793,7 +795,7 @@ export class MaterialRepository {
         return reservedMaterial[0].qtd_reservada
     }
 
-    // UPDATE QTD_RESERVADA
+    // UPDATE RESERVED QUANTITY
 
     async getEstoqueLocReserData({
         logixId
