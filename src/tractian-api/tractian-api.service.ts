@@ -5,6 +5,7 @@ import { Env } from '@/env';
 import ky, { type KyInstance } from 'ky';
 import { GetInventoryByCompanyIdResponse } from './schemas/get-inventory-by-company-id-response';
 import { GetItemStorageResponse } from './schemas/get-item-storage-response';
+import { WithdrawItemReservationResponse } from './schemas/withdraw-item-reservation-response';
 
 interface WithdrawItemReservationRequest {
     withdrawnPositions: {
@@ -20,14 +21,6 @@ interface WithdrawItemReservationRequest {
         quantity: number;
     }[];
     id: string;
-}
-
-interface WithdrawItemReservationResponse {
-    withdrawnBatches: any[];
-    withdrawnPositions: any[];
-    id: string;
-    number: number;
-    companyId: string;
 }
 
 interface GetInventoryByCompanyIdRequest {
