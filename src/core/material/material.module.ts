@@ -29,6 +29,7 @@ import { CancelMaterialReserveController } from "./controllers/cancel-material-r
     ],
     exports: [
         ReservationRepository,
+        XrefRepository,
     ],
 })
 export class MaterialModule { }

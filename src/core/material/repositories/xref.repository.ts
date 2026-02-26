@@ -71,4 +71,35 @@ export class XrefRepository {
 
         return Number(response.logixId);
     }
+
+    async updateReservationStatus(logixId: string, status: string) {
+        await this.prisma.xrefReservation.update({
+            where: { logixId },
+            data: { status },
+        });
+    }
+
+    async getXrefItemByLogixId(logixId: string) {
+        return this.prisma.xrefItem.findUnique({
+            where: { logixId },
+            select: { tracosId: true },
+        });
+    }
+
+    async getCompanyId(environment: string): Promise<string | null> {
+        const result = await this.prisma.tracosToken.findFirst({
+            select: { companyId: true },
+            where: { environment },
+        });
+
+        return result?.companyId ?? null;
+    }
+
+    async upsertXrefItem(tracosId: string, logixId: string, disabled: boolean) {
+        await this.prisma.xrefItem.upsert({
+            where: { tracosId },
+            create: { tracosId, logixId, disabled },
+            update: { disabled },
+        });
+    }
 }
