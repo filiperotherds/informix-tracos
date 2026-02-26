@@ -5,9 +5,9 @@ import { MaterialService } from "../material.service";
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import {
     type MaterialReserveBodySchema,
-    materialReserveBodySchema
+    materialReserveBodySchema,
+    MaterialReserveDto,
 } from "../schemas/body/material-reserve.schema";
-import { MaterialReserveDto } from "../material-reserve.dto";
 
 @ApiTags('Material')
 @Controller('/material')

@@ -1,4 +1,5 @@
-import z from "zod";
+import z from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const updateMaterialReserveBodySchema = z.object({
     tracos_id: z.coerce.string(),
@@ -6,3 +7,4 @@ export const updateMaterialReserveBodySchema = z.object({
 });
 
 export type UpdateMaterialReserveBodySchema = z.infer<typeof updateMaterialReserveBodySchema>;
+export class UpdateMaterialReserveDto extends createZodDto(updateMaterialReserveBodySchema) { }

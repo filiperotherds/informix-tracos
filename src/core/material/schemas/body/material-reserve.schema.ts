@@ -1,4 +1,5 @@
-import z from "zod";
+import z from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const materialReserveBodySchema = z.object({
     cod_item: z.coerce.string(),
@@ -8,3 +9,4 @@ export const materialReserveBodySchema = z.object({
 });
 
 export type MaterialReserveBodySchema = z.infer<typeof materialReserveBodySchema>;
+export class MaterialReserveDto extends createZodDto(materialReserveBodySchema) { }

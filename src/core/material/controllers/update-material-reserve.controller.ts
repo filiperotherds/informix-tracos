@@ -3,10 +3,10 @@ import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "@/common/pipes/zod-validation-pipe";
 import { MaterialService } from "../material.service";
 import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
-import { UpdateMaterialReserveDto } from "../material-reserve.dto";
 import {
     type UpdateMaterialReserveBodySchema,
-    updateMaterialReserveBodySchema
+    updateMaterialReserveBodySchema,
+    UpdateMaterialReserveDto,
 } from "../schemas/body/update-material-reserve.schema";
 
 @ApiTags('Material')
