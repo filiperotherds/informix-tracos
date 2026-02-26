@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { PrismaService } from './prisma/prisma.service';
 import { envSchema } from './env';
 import { AuthModule } from './auth/auth.module';
-import { InformixService } from './informix/informix.service';
+import { InformixModule } from './informix/informix.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { TractianApiModule } from './tractian-api/tractian-api.module';
 import { CreateAccountController } from './auth/controllers/create-account.controller';
 import { AuthenticateController } from './auth/controllers/authenticate.controller';
 import { MaterialModule } from './core/material/material.module';
 import { EquipmentModule } from './core/equipment/equipment.module';
 import { ServiceOrderModule } from './core/service-order/service-order.module';
 import { JobsModule } from './jobs/jobs.module';
-
-/* VÓS QUE ENTRAIS, ABANDONAI TODA A ESPERANÇA */
 
 @Module({
   imports: [
@@ -21,6 +20,9 @@ import { JobsModule } from './jobs/jobs.module';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    InformixModule,
+    PrismaModule,
+    TractianApiModule,
     AuthModule,
     MaterialModule,
     EquipmentModule,
@@ -31,9 +33,6 @@ import { JobsModule } from './jobs/jobs.module';
     CreateAccountController,
     AuthenticateController,
   ],
-  providers: [
-    PrismaService,
-    InformixService,
-  ],
 })
 export class AppModule { }
+

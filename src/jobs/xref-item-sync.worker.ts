@@ -1,6 +1,5 @@
-import { InformixService } from "@/informix/informix.service";
 import { PrismaService } from "@/prisma/prisma.service";
-import { getInventoryByCompanyId } from "@/tractian-api/http/get-inventory-by-company-id";
+import { TractianApiService } from "@/tractian-api/tractian-api.service";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 
@@ -9,8 +8,8 @@ export class XrefItemSyncWorker {
     private readonly logger = new Logger(XrefItemSyncWorker.name);
 
     constructor(
-        private readonly informix: InformixService,
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly tractianApi: TractianApiService,
     ) { }
 
     @Cron(CronExpression.EVERY_DAY_AT_4AM)
@@ -37,7 +36,7 @@ export class XrefItemSyncWorker {
         const { companyId } = tokenResponse
 
         while (hasNextPage) {
-            const inventory = await getInventoryByCompanyId({
+            const inventory = await this.tractianApi.getInventoryByCompanyId({
                 id: companyId,
                 limit: 100,
                 page

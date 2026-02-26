@@ -2,9 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InformixService } from '../informix/informix.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { withdrawItemReservation } from '@/tractian-api/http/withdraw-item-reservation';
 import { MaterialRepository } from '@/core/material/material.repository';
-import { getItemStorage } from '@/tractian-api/http/get-item-storage';
+import { TractianApiService } from '@/tractian-api/tractian-api.service';
 
 @Injectable()
 export class XrefReservationSyncWorker {
@@ -13,7 +12,8 @@ export class XrefReservationSyncWorker {
     constructor(
         private readonly informix: InformixService,
         private readonly prisma: PrismaService,
-        private readonly materialRepository: MaterialRepository
+        private readonly materialRepository: MaterialRepository,
+        private readonly tractianApi: TractianApiService,
     ) { }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
@@ -91,7 +91,7 @@ export class XrefReservationSyncWorker {
                                 throw new Error('Xref Item not found.')
                             }
 
-                            const itemStorageResponse = await getItemStorage({
+                            const itemStorageResponse = await this.tractianApi.getItemStorage({
                                 id: xrefItemResponse.tracosId
                             })
 
@@ -134,7 +134,7 @@ export class XrefReservationSyncWorker {
                                 remainingQtd -= amountToWithdraw;
                             });
 
-                            const withdrawResult = await withdrawItemReservation({
+                            const withdrawResult = await this.tractianApi.withdrawItemReservation({
                                 id: req.tracosId,
                                 withdrawnPositions,
                                 withdrawnBatches
