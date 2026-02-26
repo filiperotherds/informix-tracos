@@ -6,7 +6,7 @@ import { JwtAuthGuard } from "@/auth/jwt-auth.guard";
 import {
     type CancelMaterialReserveBodySchema,
     cancelMaterialReserveBodySchema
-} from "../schemas/body/cancel-material-reserve.scham";
+} from "../schemas/body/cancel-material-reserve.schema";
 import { CancelMaterialReserveDto } from "../material-reserve.dto";
 
 @ApiTags('Material')

@@ -7,7 +7,7 @@ import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve.schema";
 import { InformixService } from "@/informix/informix.service";
 import { UpdateMaterialReserveBodySchema } from "./schemas/body/update-material-reserve.schema";
-import { CancelMaterialReserveBodySchema } from "./schemas/body/cancel-material-reserve.scham";
+import { CancelMaterialReserveBodySchema } from "./schemas/body/cancel-material-reserve.schema";
 
 @Injectable()
 export class MaterialService {
