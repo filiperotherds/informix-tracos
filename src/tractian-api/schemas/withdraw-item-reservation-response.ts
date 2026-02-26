@@ -23,3 +23,5 @@ export const WithdrawItemReservationResponseSchema = z.object({
 });
 
 export type WithdrawItemReservationResponse = z.infer<typeof WithdrawItemReservationResponseSchema>;
+export type WithdrawnBatch = z.infer<typeof WithdrawnBatchSchema>;
+export type WithdrawnPosition = z.infer<typeof WithdrawnPositionSchema>;

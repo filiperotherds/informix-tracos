@@ -2,6 +2,12 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import * as odbc from 'odbc';
 import { env } from '../env';
 
+export type QueryParam = string | number | null | undefined;
+
+export interface InformixConnection {
+  query<T = any>(sql: string, params?: QueryParam[]): Promise<T[]>;
+}
+
 const informix = env.INFORMIX_STRING
 
 if (!informix || informix.trim() === '') {
@@ -46,8 +52,8 @@ export class InformixService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-    return this.pool.query(sql, params) as Promise<T[]>;
+  async query<T = any>(sql: string, params: QueryParam[] = []): Promise<T[]> {
+    return this.pool.query(sql, params as (string | number)[]) as Promise<T[]>;
   }
 
   async transaction<T>(

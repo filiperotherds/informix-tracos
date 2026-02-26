@@ -4,6 +4,7 @@ import { InformixService } from '../informix/informix.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ReservationRepository } from '@/core/material/repositories/reservation.repository';
 import { TractianApiService } from '@/tractian-api/tractian-api.service';
+import { WithdrawnBatch } from '@/tractian-api/schemas/withdraw-item-reservation-response';
 
 @Injectable()
 export class XrefReservationSyncWorker {
@@ -64,7 +65,7 @@ export class XrefReservationSyncWorker {
                                 }
                             })
 
-                            const reserveData = await this.informix.transaction<any>(async (connection) => {
+                            const reserveData = await this.informix.transaction<{ cod_empresa: string; cod_item: string; old_value: number; num_os: string }>(async (connection) => {
                                 await connection.query('SET ISOLATION DIRTY READ;')
 
                                 const data = await this.reservationRepository.getEstoqueLocReserData({
@@ -108,7 +109,7 @@ export class XrefReservationSyncWorker {
 
                             let remainingQuantity = reserveData.old_value
 
-                            let withdrawnBatches: any[] = []
+                            let withdrawnBatches: WithdrawnBatch[] = []
 
                             const batches = itemStorageResponse.data[0].inboundBatches;
 

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { InformixService } from "../../informix/informix.service";
+import { InformixService, InformixConnection } from "../../informix/informix.service";
 import { EquipmentDataSchema, equipmentDataSchema } from "./schemas/equipment-data.schema";
 import {
     type EquipmentCostCenterSchema
@@ -10,7 +10,7 @@ import { GetEquipmentDataByCodSchema } from "./schemas/get-equipment-data-by-cod
 export class EquipmentRepository {
     constructor(private informix: InformixService) { }
 
-    async getEquipmentDataByOs(num_os: string, connection?: any): Promise<EquipmentDataSchema> {
+    async getEquipmentDataByOs(num_os: string, connection?: InformixConnection): Promise<EquipmentDataSchema> {
         const db = connection || this.informix
 
         const equipmentResult = await db.query(`
@@ -36,7 +36,7 @@ export class EquipmentRepository {
         return equipmentDataSchema.parse(equipmentResult[0]);
     }
 
-    async getEquipmentCostCenter(equipmentProps: EquipmentCostCenterSchema, connection?: any): Promise<number> {
+    async getEquipmentCostCenter(equipmentProps: EquipmentCostCenterSchema, connection?: InformixConnection): Promise<number> {
         const db = connection || this.informix
 
         const { cod_empresa, cod_uni_funcio } = equipmentProps
@@ -63,7 +63,7 @@ export class EquipmentRepository {
         return centroTrabalhoResult[0].cod_centro_custo
     }
 
-    async getEquipmentDataByCod(cod_equip: string, connection?: any): Promise<GetEquipmentDataByCodSchema> {
+    async getEquipmentDataByCod(cod_equip: string, connection?: InformixConnection): Promise<GetEquipmentDataByCodSchema> {
         const db = connection || this.informix
 
         const equipment = await db.query(

@@ -1,6 +1,6 @@
 import z from "zod";
 import { Injectable } from "@nestjs/common";
-import { InformixService } from "../../informix/informix.service";
+import { InformixService, InformixConnection } from "../../informix/informix.service";
 import { CreateSchema } from "./schemas/create.schema";
 import { UpdateOsMin } from "./schemas/update-os-min.schema";
 import { UpdateAtivOsn } from "./schemas/update-ativ-osn.schema";
@@ -14,7 +14,7 @@ const expenseTypeSchema = z.coerce.number()
 export class ServiceOrderRepository {
     constructor(private informix: InformixService) { }
 
-    async getOrderById(num_os: string, connection?: any) {
+    async getOrderById(num_os: string, connection?: InformixConnection) {
         const db = connection || this.informix
 
         const order = await db.query(
@@ -30,7 +30,7 @@ export class ServiceOrderRepository {
         cod_empresa,
         num_os,
         cod_equip
-    }: CreateSchema, connection?: any) {
+    }: CreateSchema, connection?: InformixConnection) {
         const db = connection || this.informix
 
         const transactionDate = new Date()
@@ -113,7 +113,7 @@ export class ServiceOrderRepository {
         ies_status_os,
         cod_empresa,
         num_os
-    }: UpdateOsMin, connection?: any) {
+    }: UpdateOsMin, connection?: InformixConnection) {
         const db = connection || this.informix
 
         const transactionDate = new Date()
@@ -148,7 +148,7 @@ export class ServiceOrderRepository {
         cod_empresa,
         num_os,
         cod_equip
-    }: UpdateAtivOsn, connection?: any) {
+    }: UpdateAtivOsn, connection?: InformixConnection) {
         const db = connection || this.informix
 
         await db.query(`
@@ -174,7 +174,7 @@ export class ServiceOrderRepository {
         cod_equip,
         cod_empresa,
         cod_cent_trab
-    }: UpdateCodEquipSchema, connection?: any) {
+    }: UpdateCodEquipSchema, connection?: InformixConnection) {
         const db = connection || this.informix
 
         await db.query(`

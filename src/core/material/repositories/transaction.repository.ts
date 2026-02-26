@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InformixService } from '../../../informix/informix.service';
+import { InformixService, InformixConnection } from '../../../informix/informix.service';
 import { GetEstoqueTransSchema } from '../schemas/get-estoque-trans.schema';
 import { CreateEstoqueTransSchema } from '../schemas/create-estoque-trans.schema';
 import { CreateEstoqueTransEndSchema } from '../schemas/create-estoque-trans-end.schema';
@@ -15,7 +15,7 @@ export class TransactionRepository {
 
     async getEstoqueTrans(
         { cod_empresa, cod_item, num_transac }: GetEstoqueTransSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -43,7 +43,7 @@ export class TransactionRepository {
             qtd_movto,
             num_secao_requis,
         }: CreateEstoqueTransSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -105,7 +105,7 @@ export class TransactionRepository {
 
     async createEstoqueTransEnd(
         { cod_empresa, cod_item, num_transac, qtd_movto }: CreateEstoqueTransEndSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -211,7 +211,7 @@ export class TransactionRepository {
 
     async createEstoqueAuditoria(
         { cod_empresa, num_transac }: CreateEstoqueAuditoriaSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -242,7 +242,7 @@ export class TransactionRepository {
 
     async createEstoqueTransRev(
         { cod_empresa, num_transac, new_num_transac }: CreateEstoqueTransRev,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -256,7 +256,7 @@ export class TransactionRepository {
 
     async getEstoqueLoteEnder(
         { cod_empresa, cod_item }: GetEstoqueLoteEnderSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -279,7 +279,7 @@ export class TransactionRepository {
 
     async updateEstoqueLoteEnder(
         { qtd_saldo, cod_empresa, num_transac }: UpdateEstoqueLoteEnder,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -297,7 +297,7 @@ export class TransactionRepository {
 
     async updateEstoqueLote(
         { qtd_reversao, cod_empresa, cod_item }: UpdateEstoqueLote,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 

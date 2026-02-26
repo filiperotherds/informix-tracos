@@ -1,9 +1,10 @@
 import z from 'zod';
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { InformixService } from '../../../informix/informix.service';
+import { InformixService, InformixConnection } from '../../../informix/informix.service';
 import { type GetMaterialSchema } from '../schemas/get-material.schema';
 import { getAllMaterialSchema, GetAllMaterialSchema } from '../schemas/get-all-material.schema';
 import { UpdateEstoque } from '../schemas/update-estoque.schema';
+import { UpdateEstoqueQtdLiberada } from '../schemas/update-estoque-qtd-liberada.schema';
 
 const materialBalanceSchema = z.coerce.number();
 const expenseTypeSchema = z.coerce.number();
@@ -16,7 +17,7 @@ export class StockRepository {
 
     async getMaterialBalance(
         { cod_item, cod_empresa }: GetMaterialSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ): Promise<number> {
         const db = connection || this.informix;
 
@@ -36,7 +37,7 @@ export class StockRepository {
 
     async getExpenseType(
         { cod_item, cod_empresa }: GetMaterialSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ): Promise<number> {
         const db = connection || this.informix;
 
@@ -60,7 +61,7 @@ export class StockRepository {
 
     async getReservedMaterial(
         { cod_item, cod_empresa }: { cod_item: string; cod_empresa: string },
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -78,7 +79,7 @@ export class StockRepository {
         return reservedMaterial[0].qtd_reservada;
     }
 
-    async getAllMaterialBalance(connection?: any): Promise<GetAllMaterialSchema> {
+    async getAllMaterialBalance(connection?: InformixConnection): Promise<GetAllMaterialSchema> {
         const db = connection || this.informix;
 
         const response = await db.query(`
@@ -118,7 +119,7 @@ export class StockRepository {
 
     async updateEstoqueQtdReservada(
         { cod_empresa, cod_item, qtd_reserva }: UpdateEstoque,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -135,8 +136,8 @@ export class StockRepository {
     }
 
     async updateEstoqueQtdLiberada(
-        { qtd_liberada, cod_empresa, cod_item }: any,
-        connection?: any,
+        { qtd_liberada, cod_empresa, cod_item }: UpdateEstoqueQtdLiberada,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 

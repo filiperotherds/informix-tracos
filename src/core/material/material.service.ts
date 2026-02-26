@@ -5,7 +5,7 @@ import { ReservationRepository } from "./repositories/reservation.repository";
 import { EquipmentRepository } from "../equipment/equipment.repository";
 import { formattedDebitAccount } from "../../common/formatted-debit-account";
 import { MaterialReserveBodySchema } from "./schemas/body/material-reserve.schema";
-import { InformixService } from "@/informix/informix.service";
+import { InformixService, InformixConnection } from "@/informix/informix.service";
 import { UpdateMaterialReserveBodySchema } from "./schemas/body/update-material-reserve.schema";
 import { CancelMaterialReserveBodySchema } from "./schemas/body/cancel-material-reserve.schema";
 
@@ -24,8 +24,8 @@ export class MaterialService {
         num_os,
         qtd_reserva,
         tracos_id
-    }: MaterialReserveBodySchema, connection?: any) {
-        const execute = async (conn: any) => {
+    }: MaterialReserveBodySchema, connection?: InformixConnection) {
+        const execute = async (conn: InformixConnection) => {
             const { cod_empresa, cod_uni_funcio, cod_equip } = await this.equipmentRepository.getEquipmentDataByOs(num_os)
 
             const balance = await this.stockRepository.getMaterialBalance({ cod_empresa, cod_item }, conn)
@@ -142,8 +142,8 @@ export class MaterialService {
 
     async cancelReserve({
         tracos_id
-    }: CancelMaterialReserveBodySchema, connection?: any) {
-        const execute = async (conn: any) => {
+    }: CancelMaterialReserveBodySchema, connection?: InformixConnection) {
+        const execute = async (conn: InformixConnection) => {
             const logixId = await this.xrefRepository.getLogixId(tracos_id)
 
             const { cod_empresa, cod_item, old_value } = await this.reservationRepository.getEstoqueLocReserData({ logixId }, conn)

@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { ServiceOrderRepository } from "./service-order.repository";
 import { ServiceOrderBodySchema } from "./schemas/body/service-order.schema";
 import { EquipmentRepository } from "../equipment/equipment.repository";
-import { InformixService } from "@/informix/informix.service";
+import { InformixService, InformixConnection } from "@/informix/informix.service";
 import { UpdateCodEquipSchema } from "./schemas/update-cod-equip.schema";
 
 @Injectable()
@@ -13,7 +13,7 @@ export class ServiceOrderService {
         private informixService: InformixService
     ) { }
 
-    async create({ cod_equip, num_os }: ServiceOrderBodySchema, connection?: any) {
+    async create({ cod_equip, num_os }: ServiceOrderBodySchema, connection?: InformixConnection) {
         return this.informixService.transaction(async (connection) => {
             const orderWithSameId = await this.serviceOrderRepository.getOrderById(num_os, connection)
 
@@ -64,7 +64,7 @@ export class ServiceOrderService {
     async updateEquip({
         cod_equip,
         num_os
-    }: UpdateCodEquipSchema, connection?: any) {
+    }: UpdateCodEquipSchema, connection?: InformixConnection) {
         const { cod_cent_trab, cod_empresa } = await this.equipementRepository.getEquipmentDataByCod(cod_equip, connection)
 
         await this.serviceOrderRepository.updateCodEquip({

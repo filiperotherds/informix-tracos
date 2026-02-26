@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { InformixService } from '../../../informix/informix.service';
+import { InformixService, InformixConnection } from '../../../informix/informix.service';
 import { type CreateEstoqueLocReserSchema } from '../schemas/create-estoque-loc-reser.schema';
 import { CreateEstLocReserEndSchema } from '../schemas/create-est-loc-reser-end.schema';
 import { CrateSupParResvEstSchema } from '../schemas/create-sup-par-resv-est.schema';
 import { DeleteMaterialReserveSchema } from '../schemas/delete-material-reserve.schema';
+
+interface ReservationData {
+    cod_empresa: string;
+    cod_item: string;
+    old_value: number;
+    num_os: string;
+}
 
 @Injectable()
 export class ReservationRepository {
@@ -19,7 +26,7 @@ export class ReservationRepository {
             num_os,
             qtd_reserva,
         }: CreateEstoqueLocReserSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ): Promise<number> {
         const db = connection || this.informix;
 
@@ -89,7 +96,7 @@ export class ReservationRepository {
 
     async createEstLocReserEnd(
         { cod_empresa, id }: CreateEstLocReserEndSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -174,7 +181,7 @@ export class ReservationRepository {
             parametro_val,
             requisitionId,
         }: CrateSupParResvEstSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -206,8 +213,8 @@ export class ReservationRepository {
 
     async getEstoqueLocReserData(
         { logixId }: { logixId: number },
-        connection?: any,
-    ) {
+        connection?: InformixConnection,
+    ): Promise<ReservationData> {
         const db = connection || this.informix;
 
         const response = await db.query(
@@ -220,12 +227,12 @@ export class ReservationRepository {
             [logixId],
         );
 
-        return response[0];
+        return response[0] as ReservationData;
     }
 
     async updateEstoqueLocReser(
         { qtdReserva, logixId }: { qtdReserva: number; logixId: number },
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -243,7 +250,7 @@ export class ReservationRepository {
 
     async updateSupParResvEst(
         { qtdReserva, logixId }: { qtdReserva: number; logixId: number },
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -263,7 +270,7 @@ export class ReservationRepository {
 
     async deleteSupParResvEst(
         { cod_empresa, num_reserva }: DeleteMaterialReserveSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -277,7 +284,7 @@ export class ReservationRepository {
 
     async deleteEstoqLocResObs(
         { cod_empresa, num_reserva }: DeleteMaterialReserveSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -291,7 +298,7 @@ export class ReservationRepository {
 
     async deleteEstReserAreaLin(
         { cod_empresa, num_reserva }: DeleteMaterialReserveSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -305,7 +312,7 @@ export class ReservationRepository {
 
     async deleteEstoqueLocReser(
         { cod_empresa, num_reserva }: DeleteMaterialReserveSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
@@ -319,7 +326,7 @@ export class ReservationRepository {
 
     async deleteEstLocReserEnd(
         { cod_empresa, num_reserva }: DeleteMaterialReserveSchema,
-        connection?: any,
+        connection?: InformixConnection,
     ) {
         const db = connection || this.informix;
 
