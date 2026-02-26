@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { CreateDeParaSchema } from '../schemas/de-para/create-de-para.schema';
-import { DeleteDeParaSchema } from '../schemas/de-para/delete-de-para.schema';
+import { CreateXrefSchema } from '../schemas/xref/create-xref.schema';
+import { DeleteXrefSchema } from '../schemas/xref/delete-xref.schema';
 
 @Injectable()
 export class XrefRepository {
     constructor(private readonly prisma: PrismaService) { }
 
-    async createDeParaId({ logixId, tracosId }: CreateDeParaSchema) {
+    async createXref({ logixId, tracosId }: CreateXrefSchema) {
         await this.prisma.xrefReservation.create({
             data: {
                 logixId,
@@ -17,7 +17,7 @@ export class XrefRepository {
         });
     }
 
-    async cancelDeParaId({ tracosId }: DeleteDeParaSchema) {
+    async cancelXref({ tracosId }: DeleteXrefSchema) {
         await this.prisma.xrefReservation.updateMany({
             where: {
                 tracosId,

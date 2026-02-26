@@ -127,7 +127,7 @@ export class MaterialService {
                 qtd_reserva: new_qtd_reservada
             }, conn)
 
-            await this.xrefRepository.createDeParaId({
+            await this.xrefRepository.createXref({
                 logixId: requisitionId.toString(),
                 tracosId: tracos_id
             })
@@ -186,7 +186,7 @@ export class MaterialService {
                 num_reserva: logixId
             }, conn)
 
-            await this.xrefRepository.cancelDeParaId({
+            await this.xrefRepository.cancelXref({
                 tracosId: tracos_id
             })
         }
