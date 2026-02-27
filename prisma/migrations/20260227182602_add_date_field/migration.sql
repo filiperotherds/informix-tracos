@@ -1,0 +1,19 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AlterTable
+ALTER TABLE [dbo].[direct_debit_temp] ADD [created_at] DATETIME2 NOT NULL CONSTRAINT [direct_debit_temp_created_at_df] DEFAULT CURRENT_TIMESTAMP;
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

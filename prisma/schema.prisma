@@ -48,3 +48,13 @@ model TracosToken {
 
   @@map("tracos_token")
 }
+
+model DirectDebitTemp {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  numNf     String   @map("num_nf")
+  osNum     String   @map("os_num")
+
+  @@unique([numNf, osNum])
+  @@map("direct_debit_temp")
+}

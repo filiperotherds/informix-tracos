@@ -6,7 +6,6 @@ services:
     container_name: tracos-api
     restart: unless-stopped
 
-    # Load environment variables from .env file
     env_file:
       - .env
 
